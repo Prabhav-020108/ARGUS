@@ -2,15 +2,15 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, ResponsiveContainer,
-  LineChart, Line, Area, AreaChart, ReferenceLine, Cell
+  Area, AreaChart
 } from 'recharts';
 import {
   Shield, Activity, AlertTriangle, CheckCircle2, XCircle, ChevronDown,
-  BarChart3, Network, FileCheck, Settings, Eye, Clock, TrendingDown,
+  BarChart3, Network, FileCheck, Settings, Clock, TrendingDown,
   ChevronRight, Search, Send, Bot, User, Zap, Lock, Server, Database,
-  Cloud, Globe, ArrowRight, X, Check, Info, MessageSquare, Layers,
-  GitBranch, Target, ShieldCheck, ShieldAlert, ArrowUpRight, Minus, Menu,
-  FileCode, ExternalLink
+  Cloud, Globe, ArrowRight, X, Check, MessageSquare,
+  Target, ShieldCheck, ChevronUp,
+  ZoomIn, ZoomOut, RotateCcw, Filter, Bell
 } from 'lucide-react';
 import { ScenarioProvider, useScenario, SCENARIOS } from './data/scenarios';
 
@@ -18,14 +18,9 @@ import { ScenarioProvider, useScenario, SCENARIOS } from './data/scenarios';
 // DATA — Attack Graph
 // ============================================================
 const NODE_COLORS = {
-  user: '#a78bfa', role: '#c084fc', ec2: '#60a5fa', s3: '#fbbf24',
-  rds: '#f97316', sg: '#6b7280', vpc: '#4b5563', lambda: '#34d399',
-  policy: '#f472b6', entry: '#ef4444',
-};
-
-const NODE_ICONS = {
-  user: User, role: Lock, ec2: Server, s3: Database, rds: Database,
-  sg: Shield, vpc: Cloud, lambda: Zap, policy: FileCheck, entry: Globe,
+  user: '#7c3aed', role: '#9333ea', ec2: '#2563eb', s3: '#d97706',
+  rds: '#ea580c', sg: '#475569', vpc: '#334155', lambda: '#059669',
+  policy: '#db2777', entry: '#dc2626',
 };
 
 function getGraphData(scenarioId) {
@@ -33,8 +28,6 @@ function getGraphData(scenarioId) {
   return { nodes: iamNodes, edges: iamEdges, criticalPath: iamCriticalPath };
 }
 
-// Deterministic semantic positions for IAM scenario graph
-// Columns: 0=Internet, 1=SG, 2=EC2, 3=Role/User, 4=Policy, 5=Data
 const iamPositions = {
   inet:         { x: 80,  y: 270 },
   'sg-pub':     { x: 230, y: 270 },
@@ -164,8 +157,7 @@ const DPDP_RULES = [
 ];
 
 function getDPDPCompliance(sid) {
-  const d = sid === 'dpdp_violation' ? dpdpComp : iamComp;
-  return d;
+  return sid === 'dpdp_violation' ? dpdpComp : iamComp;
 }
 const iamComp = {
   score: 64, postScore: 88,
@@ -268,7 +260,7 @@ function getChatReply(q) {
 // ============================================================
 // UTILITY COMPONENTS
 // ============================================================
-function AnimatedNumber({ value, duration = 1200 }) {
+function AnimatedNumber({ value, duration = 1000 }) {
   const [display, setDisplay] = useState(0);
   useEffect(() => {
     let start = 0;
@@ -285,55 +277,63 @@ function AnimatedNumber({ value, duration = 1200 }) {
 
 function SeverityBadge({ severity }) {
   const colors = {
-    critical: 'bg-red-500/15 text-red-400 border-red-500/30',
-    high: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-    medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-    low: 'bg-green-500/15 text-green-400 border-green-500/30',
+    critical: 'bg-red-50 text-red-700 border-red-200',
+    high: 'bg-orange-50 text-orange-700 border-orange-200',
+    medium: 'bg-amber-50 text-amber-700 border-amber-200',
+    low: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider border ${colors[severity]}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${colors[severity] || colors.low}`}>
+      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${severity === 'critical' ? 'bg-red-500' : severity === 'high' ? 'bg-orange-500' : severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
       {severity}
     </span>
   );
 }
 
-function StatusDot({ status }) {
-  const c = { pass: 'bg-emerald-400', fail: 'bg-red-400', warn: 'bg-amber-400', info: 'bg-cyan-400' };
-  return <span className={`inline-block w-2 h-2 rounded-full ${c[status] || c.info}`} />;
-}
-
-function RiskGauge({ value, size = 120, label, color }) {
-  const r = (size - 12) / 2;
+function RiskGauge({ value, size = 130, label, color }) {
+  const r = (size - 16) / 2;
   const circ = 2 * Math.PI * r;
   const arc = circ * 0.75;
   const offset = arc - (arc * Math.min(value, 100) / 100);
-  const c = color || (value > 70 ? '#ef4444' : value > 40 ? '#f59e0b' : '#10b981');
+  const c = color || (value > 70 ? '#dc2626' : value > 40 ? '#f59e0b' : '#059669');
   return (
     <div className="relative flex flex-col items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-[135deg]">
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1e293b" strokeWidth="8" strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e2e8f0" strokeWidth="8" strokeDasharray={`${arc} ${circ}`} strokeLinecap="round" />
         <motion.circle cx={size/2} cy={size/2} r={r} fill="none" stroke={c} strokeWidth="8" strokeDasharray={`${arc} ${circ}`} strokeLinecap="round"
           initial={{ strokeDashoffset: arc }} animate={{ strokeDashoffset: offset }} transition={{ duration: 1.2, ease: 'easeOut' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold tabular-nums" style={{ color: c }}><AnimatedNumber value={value} /></span>
-        {label && <span className="text-[11px] text-[var(--color-text-muted)] uppercase tracking-wider mt-0.5">{label}</span>}
+        <span className="text-3xl font-extrabold tabular-nums text-slate-900 tracking-tight"><AnimatedNumber value={value} /></span>
+        {label && <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">{label}</span>}
       </div>
     </div>
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, accent }) {
+// KPI Metric Card matching Reference Image 1
+function MetricCard({ title, value, subtext, suffix, accentColor = '#2563eb', alertText }) {
   return (
-    <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-medium">{label}</span>
-        {Icon && <Icon size={14} className="text-[var(--color-text-muted)]" />}
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">{title}</span>
+        </div>
+        <div className="flex items-baseline gap-1 my-1">
+          <span className="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">
+            {typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
+          </span>
+          {suffix && <span className="text-sm font-semibold text-slate-400">{suffix}</span>}
+        </div>
+        {subtext && <p className="text-xs text-slate-500 font-medium mt-1 leading-snug">{subtext}</p>}
+        {alertText && (
+          <div className="text-[11px] font-semibold text-amber-600 mt-2 flex items-center gap-1">
+            <AlertTriangle size={12} /> {alertText}
+          </div>
+        )}
       </div>
-      <span className={`text-2xl font-bold tabular-nums ${accent || 'text-[var(--color-text-primary)]'}`}>
-        {typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
-      </span>
-      {sub && <span className="text-xs text-[var(--color-text-muted)]">{sub}</span>}
+      {/* Bottom accent colored indicator line */}
+      <div className="h-1 -mx-5 -mb-5 mt-4 rounded-b-2xl transition-all" style={{ backgroundColor: accentColor }} />
     </div>
   );
 }
@@ -343,6 +343,7 @@ function StatCard({ icon: Icon, label, value, sub, accent }) {
 // ============================================================
 const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'findings', label: 'Findings', icon: AlertTriangle },
   { id: 'graph', label: 'Attack Graph', icon: Network },
   { id: 'dpdp', label: 'DPDP Compliance', icon: ShieldCheck },
   { id: 'remediation', label: 'Remediation', icon: FileCheck },
@@ -351,33 +352,38 @@ const NAV_ITEMS = [
 
 function Sidebar({ active, onNav, collapsed, onToggle }) {
   return (
-    <aside className={`h-full bg-[var(--color-bg-secondary)] border-r border-[var(--color-border)] flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-56'}`}>
+    <aside className={`h-full bg-white border-r border-slate-200/90 flex flex-col transition-all duration-300 z-20 flex-shrink-0 ${collapsed ? 'w-18' : 'w-60'}`}>
       {/* Logo */}
-      <div className="h-14 flex items-center gap-2.5 px-4 border-b border-[var(--color-border)]">
-        <button onClick={onToggle} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0">
-            <Shield size={16} className="text-white" />
+      <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-100">
+        <button onClick={onToggle} className="flex items-center gap-3 text-left w-full hover:opacity-90 transition-opacity">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm shadow-blue-500/20 text-white">
+            <Shield size={18} />
           </div>
-          {!collapsed && <span className="text-base font-bold tracking-tight">ARGUS</span>}
+          {!collapsed && (
+            <div>
+              <span className="text-base font-extrabold tracking-tight text-slate-900 leading-none block">ARGUS</span>
+              <span className="text-[10px] text-slate-500 font-bold tracking-wider">CLOUD SECURITY</span>
+            </div>
+          )}
         </button>
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 py-3 px-2 flex flex-col gap-0.5">
+      <nav className="flex-1 py-5 px-3 flex flex-col gap-1.5">
         {NAV_ITEMS.map(item => {
           const isActive = active === item.id;
           return (
             <button key={item.id} onClick={() => onNav(item.id)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
                 isActive
-                  ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)] shadow-sm'
-                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-100 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
               }`}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon size={18} className={isActive ? 'text-amber-400' : ''} />
+              <item.icon size={18} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
               {!collapsed && <span>{item.label}</span>}
-              {!collapsed && isActive && <ChevronRight size={14} className="ml-auto text-[var(--color-text-muted)]" />}
+              {!collapsed && isActive && <ChevronRight size={14} className="ml-auto text-blue-500" />}
             </button>
           );
         })}
@@ -385,13 +391,18 @@ function Sidebar({ active, onNav, collapsed, onToggle }) {
 
       {/* Environment badge */}
       {!collapsed && (
-        <div className="px-3 pb-4">
-          <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-3 border border-[var(--color-border-subtle)]">
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] font-semibold mb-1">
-              <Cloud size={10} /> Environment
+        <div className="px-3 pb-5">
+          <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+              <Cloud size={12} className="text-slate-500" /> Target AWS
             </div>
-            <div className="text-xs text-[var(--color-text-secondary)] font-mono">AWS · us-east-1</div>
-            <div className="text-[10px] text-[var(--color-text-muted)] font-mono mt-0.5">argus-demo</div>
+            <div className="text-xs text-slate-800 font-mono font-bold">us-east-1 · Production</div>
+            <div className="flex items-center justify-between mt-1 text-[11px] text-slate-500">
+              <span className="font-mono text-[10px]">argus-demo</span>
+              <span className="text-emerald-700 font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -406,24 +417,24 @@ function TopBar({ scenarioId, onScenarioChange }) {
   const [open, setOpen] = useState(false);
   const sc = SCENARIOS[scenarioId];
   return (
-    <header className="h-14 bg-[var(--color-bg-secondary)] border-b border-[var(--color-border)] flex items-center justify-between px-5">
-      <div className="flex items-center gap-3">
+    <header className="h-16 bg-white border-b border-slate-200/90 flex items-center justify-between px-6 z-10 flex-shrink-0">
+      <div className="flex items-center gap-4">
         <div className="relative">
           <button onClick={() => setOpen(!open)}
-            className="flex items-center gap-2 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-lg px-3 py-1.5 text-sm font-medium hover:border-[var(--color-text-muted)] transition-colors">
-            <Zap size={14} className="text-amber-400" />
-            <span className="max-w-[280px] truncate">{sc.shortName}</span>
-            <ChevronDown size={14} className="text-[var(--color-text-muted)]" />
+            className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-800 transition-colors shadow-2xs">
+            <Zap size={15} className="text-blue-600" />
+            <span className="max-w-[320px] truncate">{sc.shortName}</span>
+            <ChevronDown size={14} className="text-slate-400" />
           </button>
           <AnimatePresence>
             {open && (
               <motion.div initial={{ opacity:0, y:-4 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-4 }}
-                className="absolute top-full left-0 mt-1 w-80 bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-xl shadow-2xl z-50 overflow-hidden">
+                className="absolute top-full left-0 mt-2 w-96 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden p-2">
                 {Object.values(SCENARIOS).map(s => (
                   <button key={s.id} onClick={() => { onScenarioChange(s.id); setOpen(false); }}
-                    className={`w-full text-left px-4 py-3 hover:bg-[var(--color-bg-tertiary)] transition-colors ${s.id === scenarioId ? 'bg-[var(--color-bg-tertiary)]' : ''}`}>
-                    <div className="text-sm font-medium text-[var(--color-text-primary)]">{s.name}</div>
-                    <div className="text-xs text-[var(--color-text-muted)] mt-0.5">{s.description.slice(0, 80)}...</div>
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-colors ${s.id === scenarioId ? 'bg-blue-50 text-blue-900 border border-blue-100' : 'hover:bg-slate-50'}`}>
+                    <div className="text-sm font-bold text-slate-900">{s.name}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{s.description}</div>
                   </button>
                 ))}
               </motion.div>
@@ -431,9 +442,13 @@ function TopBar({ scenarioId, onScenarioChange }) {
           </AnimatePresence>
         </div>
       </div>
-      <div className="flex items-center gap-4 text-xs text-[var(--color-text-muted)]">
-        <div className="flex items-center gap-1.5"><Clock size={12} /> Last scan: 2 min ago</div>
-        <div className="flex items-center gap-1.5"><Activity size={12} className="text-emerald-400" /> Live</div>
+      <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-1.5 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 font-semibold">
+          <Clock size={13} className="text-slate-400" /> Last scan: 2 min ago
+        </div>
+        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Guard Active
+        </div>
       </div>
     </header>
   );
@@ -464,17 +479,20 @@ const RISK_TREND_DPDP = [
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[var(--color-bg-elevated)] border border-[var(--color-border)] rounded-lg px-3 py-2 text-xs shadow-xl">
-      <p className="text-[var(--color-text-muted)] mb-1">{label}</p>
+    <div className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs shadow-lg">
+      <p className="text-slate-500 font-bold mb-1">{label}</p>
       {payload.map((p, i) => (
-        <p key={i} style={{ color: p.color }}>{p.name}: <strong>{p.value}</strong></p>
+        <p key={i} style={{ color: p.color }} className="font-bold flex items-center justify-between gap-4">
+          <span>{p.name}:</span>
+          <span>{p.value}</span>
+        </p>
       ))}
     </div>
   );
 };
 
 function OverviewPage() {
-  const { scenario, activeScenario } = useScenario();
+  const { scenario, activeScenario, setActiveScenario } = useScenario();
   const findings = getFindings(activeScenario);
   const compliance = getDPDPCompliance(activeScenario);
   const remediations = getRemediations(activeScenario);
@@ -490,7 +508,7 @@ function OverviewPage() {
   // Chart data for Stackelberg vs Naive
   const chartData = findings.slice(0, 6).map(f => ({
     id: f.id,
-    name: f.title.length > 28 ? f.title.slice(0, 26) + '…' : f.title,
+    name: f.title.length > 24 ? f.title.slice(0, 22) + '…' : f.title,
     stackelberg: f.stackRank,
     naive: f.naiveRank,
     risk: f.risk,
@@ -498,157 +516,248 @@ function OverviewPage() {
   }));
 
   const activity = [
-    { time: '2m ago',  text: 'PageRank risk scoring completed (47 nodes)', icon: Activity, color: 'text-cyan-400' },
-    { time: '3m ago',  text: 'Verification gate: R-001 passed all 3 checks', icon: CheckCircle2, color: 'text-emerald-400' },
-    { time: '5m ago',  text: 'LLM drafted remediation for sg-public-web', icon: Bot, color: 'text-purple-400' },
-    { time: '8m ago',  text: 'Stackelberg LP solved: budget B=3, 7 findings ranked', icon: Target, color: 'text-amber-400' },
-    { time: '12m ago', text: 'R-004 auto-applied (Bayes confidence 0.96 ≥ 0.90)', icon: Zap, color: 'text-emerald-400' },
-    { time: '15m ago', text: 'Cartography ingest: 47 resources, 3 regions', icon: Network, color: 'text-blue-400' },
+    { time: '2m ago',  text: 'PageRank risk scoring completed (47 nodes indexed)', icon: Activity, color: 'text-blue-600' },
+    { time: '3m ago',  text: 'Verification gate: R-001 passed all 3 OPA policy checks', icon: CheckCircle2, color: 'text-emerald-600' },
+    { time: '5m ago',  text: 'LLM generated least-privilege fix for sg-public-web', icon: Bot, color: 'text-indigo-600' },
+    { time: '8m ago',  text: 'Stackelberg LP solved: budget B=3, 7 findings re-ranked', icon: Target, color: 'text-amber-600' },
+    { time: '12m ago', text: 'R-004 auto-applied (Bayesian confidence 0.96 ≥ 0.90)', icon: Zap, color: 'text-emerald-600' },
+    { time: '15m ago', text: 'Cartography graph sync: 47 cloud resources indexed', icon: Network, color: 'text-blue-600' },
   ];
 
-  const sevColors = { critical: '#ef4444', high: '#f97316', medium: '#f59e0b', low: '#22c55e' };
+  const sevColors = { critical: '#dc2626', high: '#ea580c', medium: '#d97706', low: '#059669' };
 
   return (
-    <div className="p-5 overflow-y-auto h-full">
-      {/* Row 1: KPI bar */}
-      <div className="grid grid-cols-8 gap-3 mb-5">
-        <div className="col-span-2 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 flex items-center gap-4">
-          <RiskGauge value={scenario.riskScore} size={90} />
+    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full">
+      {/* 1. Top Posture Banner (Inspired directly by reference image 1) */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-6 flex-wrap text-xs">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">Attack Risk</div>
-            <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">PageRank weighted</div>
-            <div className={`text-xs mt-1.5 font-semibold ${scenario.riskScore > 70 ? 'text-red-400' : 'text-amber-400'}`}>
-              {scenario.riskScore > 70 ? '⚠ HIGH RISK' : '▲ ELEVATED'}
-            </div>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">SESSION</span>
+            <span className="font-extrabold text-slate-800 text-sm">Posture Audit</span>
+          </div>
+          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
+          <div>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">STATUS</span>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+              scenario.riskScore > 70 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${scenario.riskScore > 70 ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse`} />
+              {scenario.riskScore > 70 ? 'OVERLOADED RISK' : 'ELEVATED RISK'}
+            </span>
+          </div>
+          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
+          <div>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">TARGET DEVICE</span>
+            <span className="font-bold text-slate-700 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Connected · AWS us-east-1
+            </span>
+          </div>
+          <div className="h-8 w-[1px] bg-slate-200 hidden md:block" />
+          <div className="hidden md:block">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">OPTIMAL SOLVER</span>
+            <span className="font-bold text-blue-600">Stackelberg LP + GNN</span>
+          </div>
+          <div className="h-8 w-[1px] bg-slate-200 hidden lg:block" />
+          <div className="hidden lg:block">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">COMPLIANCE ENGINE</span>
+            <span className="font-bold text-emerald-700 flex items-center gap-1">
+              <CheckCircle2 size={13} /> DPDP 2025 Active
+            </span>
           </div>
         </div>
-        <div className="col-span-2 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4 flex items-center gap-4">
-          <RiskGauge value={compliance.score} size={90} color={compliance.score > 70 ? '#10b981' : compliance.score > 50 ? '#f59e0b' : '#ef4444'} />
-          <div>
-            <div className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">DPDP Readiness</div>
-            <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">Rules 6/7/8/15</div>
-            <div className={`text-xs mt-1.5 font-semibold ${compliance.score < 50 ? 'text-red-400' : 'text-amber-400'}`}>
-              Post-fix: {compliance.postScore}%
-            </div>
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300/80 rounded-xl transition-colors shadow-2xs">
+            Run Scan Cycle
+          </button>
+          <div className="text-xl font-extrabold font-mono text-blue-600 bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl tabular-nums">
+            00:15
           </div>
         </div>
-        {[
-          { label: 'Critical', val: scenario.findingCounts.critical, color: 'text-red-400', bg: 'bg-red-500/10' },
-          { label: 'High', val: scenario.findingCounts.high, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-          { label: 'Resources', val: scenario.totalResources, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-          { label: 'Auto-Applied', val: pipeline.applied, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-        ].map(s => (
-          <div key={s.label} className={`${s.bg} border border-[var(--color-border)] rounded-xl p-4 flex flex-col justify-between`}>
-            <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">{s.label}</span>
-            <span className={`text-3xl font-bold tabular-nums ${s.color}`}><AnimatedNumber value={s.val} /></span>
-          </div>
-        ))}
       </div>
 
-      {/* Row 2: main content */}
-      <div className="grid grid-cols-12 gap-5">
-        {/* Stackelberg vs Naive bar chart */}
-        <div className="col-span-7 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
+      {/* 2. Target Scenario Strip */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="font-extrabold text-slate-900 text-sm">{scenario.name}</span>
+          <span className="text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-lg">
+            PRIORITY FIX #1: R-001
+          </span>
+          <span className="text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-lg">
+            ATTACK HOPS: 7
+          </span>
+          <span className="text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200 px-2.5 py-0.5 rounded-lg">
+            DPDP PENALTY: ₹250 CR
+          </span>
+          <span className="text-xs text-slate-500 hidden xl:inline font-medium">Recommended: sever cross-role bridge to isolate crown jewel</span>
+        </div>
+        <button onClick={() => setActiveScenario(activeScenario === 'iam_escalation' ? 'dpdp_violation' : 'iam_escalation')}
+          className="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-50 border border-slate-300 px-3.5 py-1.5 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs">
+          Change Scenario
+        </button>
+      </div>
+
+      {/* 3. Five KPI Metric Cards (Generous room, clear typography, clean accent lines) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <MetricCard
+          title="ATTACK RISK SCORE"
+          value={scenario.riskScore}
+          suffix="/100"
+          subtext="PageRank weighted graph analysis"
+          accentColor="#dc2626"
+          alertText={scenario.riskScore > 70 ? "High blast radius" : undefined}
+        />
+        <MetricCard
+          title="DPDP COMPLIANCE"
+          value={compliance.score}
+          suffix="%"
+          subtext={`Post-remediation: ${compliance.postScore}%`}
+          accentColor="#2563eb"
+        />
+        <MetricCard
+          title="CRITICAL FINDINGS"
+          value={scenario.findingCounts.critical}
+          suffix="open"
+          subtext="Immediate remediation required"
+          accentColor="#ea580c"
+        />
+        <MetricCard
+          title="CLOUD ASSETS"
+          value={scenario.totalResources}
+          suffix="nodes"
+          subtext="IAM, S3, RDS, EC2, VPC indexed"
+          accentColor="#4f46e5"
+        />
+        <MetricCard
+          title="AUTO-APPLIED FIXES"
+          value={pipeline.applied}
+          suffix="applied"
+          subtext="Bayesian confidence ≥ 0.90"
+          accentColor="#059669"
+        />
+      </div>
+
+      {/* 4. Main Charts Section (Spacious 2-column layout) */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left Column: Stackelberg Prioritization + Neural Risk Rankings */}
+        <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-sm font-semibold">Stackelberg vs Naive Prioritization</h3>
-              <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Lower rank number = higher priority. Game model shifts budget away from naive severity ordering.</p>
+              <h3 className="text-base font-extrabold text-slate-900">Stackelberg vs Naive Prioritization</h3>
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">Lower rank number = higher urgency. Game theory re-allocates budget away from naive severity.</p>
             </div>
-            <div className="flex items-center gap-4 text-[10px]">
-              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-amber-500" /> Stackelberg</div>
-              <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#334155]" /> Naive</div>
+            <div className="flex items-center gap-4 text-xs font-bold">
+              <div className="flex items-center gap-1.5 text-blue-700"><div className="w-3 h-3 rounded-md bg-blue-600" /> Stackelberg LP</div>
+              <div className="flex items-center gap-1.5 text-slate-500"><div className="w-3 h-3 rounded-md bg-slate-300" /> Naive Rank</div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={chartData} margin={{ top: 0, right: 8, bottom: 40, left: -20 }}>
-              <XAxis dataKey="id" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'var(--font-mono)' }}
-                angle={-35} textAnchor="end" interval={0} />
-              <YAxis reversed tick={{ fill: '#64748b', fontSize: 10 }} domain={[0, chartData.length + 1]}
-                tickFormatter={v => `#${v}`} />
-              <RTooltip content={<CustomTooltip />}
-                formatter={(val, name) => [`#${val}`, name === 'stackelberg' ? 'Stackelberg Rank' : 'Naive Rank']} />
-              <Bar dataKey="stackelberg" name="Stackelberg" fill="#f59e0b" radius={[4,4,0,0]} maxBarSize={28} />
-              <Bar dataKey="naive" name="Naive" fill="#334155" radius={[4,4,0,0]} maxBarSize={28} />
-            </BarChart>
-          </ResponsiveContainer>
-          {/* Risk delta visual */}
-          <div className="mt-3 space-y-1.5">
+
+          <div className="w-full">
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 25, left: -20 }}>
+                <XAxis dataKey="id" tick={{ fill: '#475569', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-mono)' }} />
+                <YAxis reversed tick={{ fill: '#475569', fontSize: 12 }} domain={[0, chartData.length + 1]} tickFormatter={v => `#${v}`} />
+                <RTooltip content={<CustomTooltip />} />
+                <Bar dataKey="stackelberg" name="Stackelberg Rank" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="naive" name="Naive Rank" fill="#cbd5e1" radius={[6, 6, 0, 0]} maxBarSize={28} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Neural Region Activation / Risk Impact Rankings (Directly inspired by Image 1) */}
+          <div className="border-t border-slate-100 pt-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] uppercase tracking-wider font-extrabold text-slate-400">NEURAL RESOURCE RISK ACTIVATION</span>
+              <span className="text-xs text-slate-500 font-semibold">Normalized Risk</span>
+            </div>
             {chartData.slice(0, 4).map(f => (
-              <div key={f.id} className="flex items-center gap-3 text-xs">
-                <span className="font-mono text-[var(--color-text-muted)] w-12">{f.id}</span>
-                <div className="flex-1 bg-[var(--color-bg-tertiary)] rounded-full h-1.5 overflow-hidden">
-                  <motion.div className="h-full rounded-full" style={{ background: sevColors[f.severity] }}
+              <div key={f.id} className="space-y-1">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="font-mono text-slate-700">{f.id} — {f.name}</span>
+                  <span className="font-bold tabular-nums" style={{ color: sevColors[f.severity] }}>{f.risk} / 100</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                  <motion.div className="h-full rounded-full" style={{ backgroundColor: sevColors[f.severity] }}
                     initial={{ width: 0 }} animate={{ width: `${f.risk}%` }} transition={{ duration: 1, delay: 0.2 }} />
                 </div>
-                <span className="w-6 text-right" style={{ color: sevColors[f.severity] }}>{f.risk}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right column */}
-        <div className="col-span-5 space-y-4">
-          {/* Risk trend */}
-          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold">Score Trend (last 15 min)</h3>
-              <span className="text-[10px] text-[var(--color-text-muted)]">Live · 30s refresh</span>
+        {/* Right Column: Score Trend, Pipeline & Activity */}
+        <div className="col-span-12 lg:col-span-5 space-y-6">
+          {/* Risk Trend Chart */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-900">Posture Score Trend</h3>
+                <span className="text-xs text-slate-500 font-medium">Last 15 minutes of live telemetry</span>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                Live · 30s refresh
+              </span>
             </div>
-            <ResponsiveContainer width="100%" height={90}>
-              <AreaChart data={trendData} margin={{ top: 4, right: 4, bottom: 0, left: -30 }}>
+            <ResponsiveContainer width="100%" height={120}>
+              <AreaChart data={trendData} margin={{ top: 5, right: 5, bottom: 0, left: -25 }}>
                 <defs>
                   <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#dc2626" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="dpdpGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="t" tick={{ fill: '#475569', fontSize: 9 }} />
-                <YAxis domain={[20, 100]} tick={{ fill: '#475569', fontSize: 9 }} />
-                <RTooltip content={<CustomTooltip />} formatter={(v, n) => [v, n === 'risk' ? 'Risk' : 'DPDP']} />
-                <Area type="monotone" dataKey="risk" name="risk" stroke="#ef4444" fill="url(#riskGrad)" strokeWidth={1.5} dot={false} />
-                <Area type="monotone" dataKey="dpdp" name="dpdp" stroke="#06b6d4" fill="url(#dpdpGrad)" strokeWidth={1.5} dot={false} />
+                <XAxis dataKey="t" tick={{ fill: '#64748b', fontSize: 11 }} />
+                <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} />
+                <RTooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="risk" name="Risk Score" stroke="#dc2626" strokeWidth={2.5} fill="url(#riskGrad)" />
+                <Area type="monotone" dataKey="dpdp" name="DPDP Score" stroke="#2563eb" strokeWidth={2.5} fill="url(#dpdpGrad)" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-
-          {/* Pipeline */}
-          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4">
-            <h3 className="text-sm font-semibold mb-3">Remediation Pipeline</h3>
-            <div className="space-y-2">
-              {[
-                { label: 'Drafted by LLM', count: pipeline.drafted, color: 'bg-blue-500', total: 4 },
-                { label: 'Verification Passed', count: pipeline.verified, color: 'bg-purple-500', total: 4 },
-                { label: 'Approved', count: pipeline.approved, color: 'bg-amber-500', total: 4 },
-                { label: 'Auto-Applied', count: pipeline.applied, color: 'bg-emerald-500', total: 4 },
-              ].map(s => (
-                <div key={s.label} className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${s.color} flex-shrink-0`} />
-                  <span className="text-xs text-[var(--color-text-secondary)] flex-1">{s.label}</span>
-                  <div className="flex gap-1">
-                    {Array.from({ length: s.total }).map((_, i) => (
-                      <div key={i} className={`w-4 h-4 rounded ${i < s.count ? s.color : 'bg-[var(--color-bg-elevated)]'}`} />
-                    ))}
-                  </div>
-                  <span className="text-xs font-mono text-[var(--color-text-muted)] w-4">{s.count}</span>
-                </div>
-              ))}
+            <div className="flex items-center justify-center gap-6 mt-3 text-xs font-bold">
+              <div className="flex items-center gap-1.5 text-red-600"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Attack Risk</div>
+              <div className="flex items-center gap-1.5 text-blue-600"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> DPDP Compliance</div>
             </div>
           </div>
 
-          {/* Activity feed */}
-          <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-4">
-            <h3 className="text-sm font-semibold mb-2">Recent Activity</h3>
-            <div className="space-y-2.5">
+          {/* Remediation Pipeline status chips */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-extrabold text-slate-900">Remediation Pipeline</h3>
+              <span className="text-xs font-bold text-blue-600">{remediations.length} Actions</span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                <div className="text-lg font-extrabold text-slate-800">{pipeline.drafted}</div>
+                <div className="text-[10px] uppercase font-bold text-slate-500">Drafted</div>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                <div className="text-lg font-extrabold text-blue-700">{pipeline.verified}</div>
+                <div className="text-[10px] uppercase font-bold text-blue-600">Verified</div>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                <div className="text-lg font-extrabold text-amber-700">{pipeline.approved}</div>
+                <div className="text-[10px] uppercase font-bold text-amber-600">Approved</div>
+              </div>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                <div className="text-lg font-extrabold text-emerald-700">{pipeline.applied}</div>
+                <div className="text-[10px] uppercase font-bold text-emerald-600">Applied</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Security Activity Feed */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+            <h3 className="text-sm font-extrabold text-slate-900 mb-3.5">Recent Security Events</h3>
+            <div className="space-y-3">
               {activity.map((a, i) => (
-                <div key={i} className="flex items-start gap-2">
-                  <a.icon size={13} className={`${a.color} mt-0.5 flex-shrink-0`} />
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-[var(--color-text-secondary)] leading-relaxed">{a.text}</p>
-                    <span className="text-[10px] text-[var(--color-text-muted)]">{a.time}</span>
+                <div key={i} className="flex items-start gap-3 text-xs">
+                  <a.icon size={16} className={`${a.color} mt-0.5 flex-shrink-0`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-slate-800 font-semibold leading-snug">{a.text}</p>
+                    <span className="text-[10px] text-slate-400 font-medium">{a.time}</span>
                   </div>
                 </div>
               ))}
@@ -661,190 +770,408 @@ function OverviewPage() {
 }
 
 // ============================================================
+// PAGE: FINDINGS
+// ============================================================
+function FindingsPage() {
+  const { activeScenario } = useScenario();
+  const findings = getFindings(activeScenario);
+  const [search, setSearch] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [sortKey, setSortKey] = useState('stackRank');
+  const [sortDir, setSortDir] = useState('asc');
+  const [selectedFinding, setSelectedFinding] = useState(null);
+
+  const severities = ['all', 'critical', 'high', 'medium', 'low'];
+  const sevPills = {
+    all: 'bg-slate-100 text-slate-700 border-slate-200',
+    critical: 'bg-red-50 text-red-700 border-red-200',
+    high: 'bg-orange-50 text-orange-700 border-orange-200',
+    medium: 'bg-amber-50 text-amber-700 border-amber-200',
+    low: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  };
+
+  const filtered = useMemo(() => {
+    return findings
+      .filter(f => severityFilter === 'all' || f.severity === severityFilter)
+      .filter(f => !search || f.title.toLowerCase().includes(search.toLowerCase()) || f.resource.toLowerCase().includes(search.toLowerCase()) || f.type.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => {
+        let av = a[sortKey], bv = b[sortKey];
+        if (typeof av === 'string') av = av.toLowerCase(), bv = bv.toLowerCase();
+        return sortDir === 'asc' ? (av < bv ? -1 : av > bv ? 1 : 0) : (av > bv ? -1 : av < bv ? 1 : 0);
+      });
+  }, [findings, search, severityFilter, sortKey, sortDir]);
+
+  const toggleSort = (key) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+  };
+
+  const SortIcon = ({ k }) => {
+    if (sortKey !== k) return <ChevronUp size={12} className="opacity-20" />;
+    return sortDir === 'asc' ? <ChevronUp size={12} className="text-blue-600" /> : <ChevronDown size={12} className="text-blue-600" />;
+  };
+
+  const selectedF = findings.find(f => f.id === selectedFinding);
+  const remediations = getRemediations(activeScenario);
+  const relatedRem = selectedF ? remediations.filter(r => r.resource === selectedF.resource || r.resource === selectedF.id) : [];
+
+  const sevCounts = useMemo(() => {
+    const c = { critical: 0, high: 0, medium: 0, low: 0 };
+    findings.forEach(f => c[f.severity]++);
+    return c;
+  }, [findings]);
+
+  return (
+    <div className="h-full flex flex-col max-w-[1600px] mx-auto w-full p-6 md:p-8 space-y-6 overflow-hidden">
+      {/* Search & Filter Header */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center gap-4 flex-wrap justify-between flex-shrink-0">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 w-72 focus-within:border-blue-500 focus-within:bg-white transition-all">
+            <Search size={15} className="text-slate-400" />
+            <input
+              type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search findings or resources..."
+              className="bg-transparent text-sm text-slate-800 placeholder-slate-400 outline-none w-full font-medium" />
+            {search && <button onClick={() => setSearch('')}><X size={13} className="text-slate-400 hover:text-slate-600" /></button>}
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {severities.map(s => (
+              <button key={s} onClick={() => setSeverityFilter(s)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                  severityFilter === s
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                    : `${sevPills[s]} hover:opacity-80`
+                }`}>
+                {s}{s !== 'all' && sevCounts[s] > 0 ? ` (${sevCounts[s]})` : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="text-xs font-bold text-slate-500">
+          Showing {filtered.length} of {findings.length} findings
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex min-h-0 gap-6 overflow-hidden">
+        {/* Table list */}
+        <div className="flex-1 overflow-y-auto pr-1 space-y-3">
+          {/* Table column headers */}
+          <div className="grid grid-cols-12 gap-3 px-5 py-2 text-[11px] uppercase tracking-wider text-slate-400 font-extrabold">
+            {[{k:'stackRank',l:'Stack #',c:'col-span-1'},{k:'title',l:'Finding Title',c:'col-span-4'},{k:'severity',l:'Severity',c:'col-span-2'},{k:'resource',l:'Resource Asset',c:'col-span-2'},{k:'risk',l:'Risk Score',c:'col-span-2'},{k:'status',l:'Status',c:'col-span-1'}].map(col => (
+              <button key={col.k} onClick={() => toggleSort(col.k)}
+                className={`${col.c} flex items-center gap-1 hover:text-slate-700 transition-colors text-left`}>
+                {col.l}<SortIcon k={col.k} />
+              </button>
+            ))}
+          </div>
+
+          {/* Finding Cards */}
+          {filtered.map(f => (
+            <motion.div key={f.id} layout onClick={() => setSelectedFinding(selectedFinding === f.id ? null : f.id)}
+              className={`grid grid-cols-12 gap-3 items-center px-5 py-4 rounded-2xl border cursor-pointer transition-all bg-white ${
+                selectedFinding === f.id
+                  ? 'border-blue-500 ring-2 ring-blue-500/10 shadow-md'
+                  : 'border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs'
+              }`}>
+              {/* Stackelberg Rank */}
+              <div className="col-span-1">
+                <span className="text-base font-extrabold text-blue-600 font-mono">#{f.stackRank}</span>
+                {f.stackRank !== f.naiveRank && (
+                  <span className={`block text-[10px] font-bold ${f.stackRank < f.naiveRank ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {f.stackRank < f.naiveRank ? `↑${f.naiveRank - f.stackRank} rank` : `↓${f.stackRank - f.naiveRank} rank`}
+                  </span>
+                )}
+              </div>
+              {/* Title */}
+              <div className="col-span-4">
+                <p className="text-sm font-bold text-slate-900 leading-snug">{f.title}</p>
+                {f.dpdp.length > 0 && (
+                  <div className="flex gap-1.5 mt-1">
+                    {f.dpdp.map(d => <span key={d} className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-bold">{d}</span>)}
+                  </div>
+                )}
+              </div>
+              {/* Severity */}
+              <div className="col-span-2">
+                <SeverityBadge severity={f.severity} />
+              </div>
+              {/* Resource */}
+              <div className="col-span-2">
+                <span className="text-xs font-mono font-bold text-slate-700 block truncate">{f.resource}</span>
+                <span className="text-[11px] text-slate-400 font-medium">{f.type}</span>
+              </div>
+              {/* Risk bar */}
+              <div className="col-span-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{
+                      width: `${f.risk}%`,
+                      backgroundColor: f.severity === 'critical' ? '#dc2626' : f.severity === 'high' ? '#ea580c' : '#f59e0b'
+                    }} />
+                  </div>
+                  <span className="text-xs font-bold font-mono text-slate-800">{f.risk}</span>
+                </div>
+              </div>
+              {/* Status */}
+              <div className="col-span-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                  {f.status}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Detail drawer */}
+        <AnimatePresence>
+          {selectedF && (
+            <motion.div initial={{ x: 380, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 380, opacity: 0 }}
+              className="w-96 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-lg overflow-y-auto flex-shrink-0 space-y-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <SeverityBadge severity={selectedF.severity} />
+                    <span className="text-xs font-mono font-bold text-slate-400">{selectedF.id}</span>
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-900 leading-snug">{selectedF.title}</h3>
+                </div>
+                <button onClick={() => setSelectedFinding(null)} className="text-slate-400 hover:text-slate-700 p-1">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Stackelberg Summary Card */}
+              <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-4">
+                <div className="text-[10px] uppercase tracking-wider text-blue-700 font-extrabold mb-1.5 flex items-center gap-1.5">
+                  <Target size={13} /> Stackelberg Optimal Fix
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Optimal Rank</span>
+                    <span className="text-lg font-extrabold text-blue-700">#{selectedF.stackRank}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Naive Severity Rank</span>
+                    <span className="text-lg font-extrabold text-slate-500">#{selectedF.naiveRank}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                  Eliminating this finding breaks the attacker's fallback path to customer records, yielding maximal blast reduction per remediation credit.
+                </p>
+              </div>
+
+              {/* Related Remediations */}
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Recommended Fix</h4>
+                {relatedRem.length > 0 ? (
+                  relatedRem.map(r => (
+                    <div key={r.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-slate-900">{r.title}</span>
+                        <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">OPA Passed</span>
+                      </div>
+                      <p className="text-xs text-slate-600">{r.explanation}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No automated remediation in pipeline yet.</p>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
 // PAGE: ATTACK GRAPH
 // ============================================================
 function AttackGraphPage() {
   const { activeScenario } = useScenario();
   const { nodes, edges, criticalPath } = getGraphData(activeScenario);
   const [selected, setSelected] = useState(null);
-  const [showCritical, setShowCritical] = useState(false);
-  const [layout, setLayout] = useState('force');
+  const [showCritical, setShowCritical] = useState(true);
+  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 0.95 });
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const svgRef = useRef(null);
+
+  const positions = activeScenario === 'dpdp_violation' ? dpdpPositions : iamPositions;
+
+  const isOnCritPath = useCallback((id) => criticalPath.includes(id), [criticalPath]);
+  const isEdgeCrit = useCallback((s, t) => {
+    const sIdx = criticalPath.indexOf(s);
+    const tIdx = criticalPath.indexOf(t);
+    return sIdx !== -1 && tIdx !== -1 && tIdx === sIdx + 1;
+  }, [criticalPath]);
+
+  const zoomIn = () => setTransform(t => ({ ...t, scale: Math.min(t.scale * 1.2, 2.5) }));
+  const zoomOut = () => setTransform(t => ({ ...t, scale: Math.max(t.scale / 1.2, 0.4) }));
+  const resetView = () => setTransform({ x: 0, y: 0, scale: 0.95 });
+
+  const handleMouseDown = (e) => {
+    if (e.target.tagName === 'svg' || e.target.tagName === 'rect') {
+      setDragging(true);
+      setDragStart({ x: e.clientX - transform.x, y: e.clientY - transform.y });
+    }
+  };
+  const handleMouseMove = (e) => {
+    if (dragging) {
+      setTransform(t => ({ ...t, x: e.clientX - dragStart.x, y: e.clientY - dragStart.y }));
+    }
+  };
+  const handleMouseUp = () => setDragging(false);
 
   const selectedNode = nodes.find(n => n.id === selected);
 
-  // Use deterministic semantic positions, not random layout
-  const positions = useMemo(() => {
-    return activeScenario === 'dpdp_violation' ? dpdpPositions : iamPositions;
-  }, [activeScenario]);
-
-  useEffect(() => { setSelected(null); }, [activeScenario]);
-
-  const svgWidth = 1100;
-  const svgHeight = 550;
-  const isOnCritPath = (id) => showCritical && criticalPath.includes(id);
-  const isEdgeCrit = (s, t) => {
-    if (!showCritical) return false;
-    const si = criticalPath.indexOf(s);
-    const ti = criticalPath.indexOf(t);
-    return si >= 0 && ti >= 0 && Math.abs(si - ti) === 1;
-  };
-
   return (
-    <div className="h-full flex">
-      {/* Graph area */}
-      <div className="flex-1 flex flex-col">
-        {/* Controls */}
-        <div className="px-5 py-3 border-b border-[var(--color-border)] flex items-center gap-3">
+    <div className="h-full flex flex-col max-w-[1600px] mx-auto w-full p-6 md:p-8 space-y-4 overflow-hidden">
+      {/* Toolbar */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-3 flex-shrink-0">
+        <div className="flex items-center gap-3">
           <button onClick={() => setShowCritical(!showCritical)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              showCritical ? 'bg-red-500/15 text-red-400 border border-red-500/30' : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]'
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+              showCritical
+                ? 'bg-red-50 text-red-700 border-red-200 shadow-2xs'
+                : 'bg-slate-50 text-slate-600 border-slate-200'
             }`}>
-            <Target size={13} /> {showCritical ? 'Critical Path Active' : 'Highlight Critical Path'}
+            <Target size={14} /> {showCritical ? 'Critical Attack Path: Active' : 'Highlight Critical Path'}
           </button>
-          <div className="flex items-center bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-border)] overflow-hidden">
-            {['force', 'hierarchical'].map(l => (
-              <button key={l} onClick={() => setLayout(l)}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors ${layout === l ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]' : 'text-[var(--color-text-muted)]'}`}>
-                {l === 'force' ? 'Force' : 'Hierarchical'}
-              </button>
-            ))}
-          </div>
-          <div className="ml-auto flex items-center gap-3 text-[10px] text-[var(--color-text-muted)]">
-            {Object.entries(NODE_COLORS).filter(([k]) => k !== 'entry').map(([type, color]) => (
-              <div key={type} className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-                <span className="uppercase">{type}</span>
-              </div>
-            ))}
+          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1">
+            <button onClick={zoomIn} className="p-1.5 rounded-lg hover:bg-white text-slate-600 transition-colors"><ZoomIn size={14} /></button>
+            <button onClick={zoomOut} className="p-1.5 rounded-lg hover:bg-white text-slate-600 transition-colors"><ZoomOut size={14} /></button>
+            <button onClick={resetView} className="p-1.5 rounded-lg hover:bg-white text-slate-600 transition-colors"><RotateCcw size={14} /></button>
+            <span className="text-[11px] font-mono font-bold text-slate-500 px-2">{Math.round(transform.scale * 100)}%</span>
           </div>
         </div>
-
-        {/* SVG Graph */}
-        <div className="flex-1 overflow-hidden bg-[var(--color-bg-primary)] relative">
-          <svg width="100%" height="100%" viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
-            <defs>
-              <marker id="arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
-                <path d="M0,0 L10,3 L0,6 Z" fill="#374151" />
-              </marker>
-              <marker id="arrow-crit" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
-                <path d="M0,0 L10,3 L0,6 Z" fill="#ef4444" />
-              </marker>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-            </defs>
-
-            {/* Edges */}
-            {edges.map((e, i) => {
-              const from = positions[e.s];
-              const to = positions[e.t];
-              if (!from || !to) return null;
-              const isCrit = isEdgeCrit(e.s, e.t);
-              return (
-                <g key={i}>
-                  <line x1={from.x} y1={from.y} x2={to.x} y2={to.y}
-                    stroke={isCrit ? '#ef4444' : '#1e293b'}
-                    strokeWidth={isCrit ? 2.5 : 1}
-                    markerEnd={isCrit ? 'url(#arrow-crit)' : 'url(#arrow)'}
-                    opacity={showCritical && !isCrit ? 0.2 : 0.8}
-                    filter={isCrit ? 'url(#glow)' : undefined}
-                  />
-                  {isCrit && (
-                    <text x={(from.x + to.x) / 2} y={(from.y + to.y) / 2 - 6}
-                      fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="var(--font-mono)">{e.label}</text>
-                  )}
-                </g>
-              );
-            })}
-
-            {/* Nodes */}
-            {nodes.map(n => {
-              const pos = positions[n.id];
-              if (!pos) return null;
-              const color = NODE_COLORS[n.type] || '#6b7280';
-              const onPath = isOnCritPath(n.id);
-              const isSel = selected === n.id;
-              const dim = showCritical && !onPath;
-              const r = n.crown ? 22 : 16;
-              return (
-                <g key={n.id} onClick={() => setSelected(n.id)} className="cursor-pointer">
-                  {/* Crown jewel glow */}
-                  {n.crown && (
-                    <circle cx={pos.x} cy={pos.y} r={r + 8} fill="none" stroke={color} strokeWidth="1" opacity="0.3">
-                      <animate attributeName="r" values={`${r+4};${r+10};${r+4}`} dur="3s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="3s" repeatCount="indefinite" />
-                    </circle>
-                  )}
-                  {/* Main circle */}
-                  <circle cx={pos.x} cy={pos.y} r={r} fill={`${color}20`} stroke={isSel ? '#fff' : onPath ? '#ef4444' : color}
-                    strokeWidth={isSel ? 2.5 : onPath ? 2 : 1.5} opacity={dim ? 0.2 : 1} filter={onPath ? 'url(#glow)' : undefined} />
-                  {/* Risk score inside */}
-                  <text x={pos.x} y={pos.y + 1} fill={dim ? '#374151' : color} fontSize="10" textAnchor="middle" dominantBaseline="middle"
-                    fontFamily="var(--font-mono)" fontWeight="600">{n.risk}</text>
-                  {/* Label below */}
-                  <text x={pos.x} y={pos.y + r + 14} fill={dim ? '#374151' : '#94a3b8'} fontSize="10" textAnchor="middle"
-                    fontFamily="var(--font-sans)" fontWeight="500">{n.label.length > 18 ? n.label.slice(0,16)+'…' : n.label}</text>
-                </g>
-              );
-            })}
-          </svg>
+        <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
+          <span className="hidden md:inline">Drag to pan · Click node to inspect details</span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" /> EC2</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-purple-600 inline-block" /> Role</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> S3</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block" /> Entry</span>
+          </div>
         </div>
       </div>
 
-      {/* Node inspector panel */}
-      <AnimatePresence>
-        {selectedNode && (
-          <motion.div initial={{ x: 320, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 320, opacity: 0 }}
-            className="w-80 border-l border-[var(--color-border)] bg-[var(--color-bg-secondary)] overflow-y-auto">
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold">Node Inspector</h3>
-                <button onClick={() => setSelected(null)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"><X size={16} /></button>
+      {/* SVG Canvas and Node Inspector */}
+      <div className="flex-1 flex min-h-0 gap-6 overflow-hidden">
+        <div
+          ref={svgRef}
+          className="flex-1 bg-white border border-slate-200/90 rounded-2xl relative overflow-hidden cursor-grab active:cursor-grabbing shadow-[0_2px_8px_rgba(15,23,42,0.04)]"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+        >
+          <svg width="100%" height="100%" viewBox="0 0 1200 600">
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,3 L0,6 Z" fill="#94a3b8" />
+              </marker>
+              <marker id="arrow-crit" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,3 L0,6 Z" fill="#dc2626" />
+              </marker>
+              <pattern id="gridDots" width="30" height="30" patternUnits="userSpaceOnUse">
+                <circle cx="15" cy="15" r="1.5" fill="#cbd5e1" opacity="0.6" />
+              </pattern>
+            </defs>
+
+            <rect width="100%" height="100%" fill="url(#gridDots)" />
+
+            <g transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}>
+              {/* Edges */}
+              {edges.map((e, i) => {
+                const from = positions[e.s];
+                const to = positions[e.t];
+                if (!from || !to) return null;
+                const isCrit = isEdgeCrit(e.s, e.t);
+                return (
+                  <g key={i}>
+                    <line x1={from.x} y1={from.y} x2={to.x} y2={to.y}
+                      stroke={isCrit ? '#dc2626' : '#94a3b8'}
+                      strokeWidth={isCrit ? 3 : 1.5}
+                      strokeDasharray={isCrit ? 'none' : '4 3'}
+                      markerEnd={isCrit ? 'url(#arrow-crit)' : 'url(#arrow)'}
+                      opacity={showCritical && !isCrit ? 0.3 : 0.9}
+                    />
+                    {isCrit && (
+                      <text x={(from.x + to.x) / 2} y={(from.y + to.y) / 2 - 8}
+                        fill="#dc2626" fontSize="10" fontWeight="bold" textAnchor="middle" fontFamily="var(--font-mono)">
+                        {e.label}
+                      </text>
+                    )}
+                  </g>
+                );
+              })}
+
+              {/* Nodes */}
+              {nodes.map(n => {
+                const pos = positions[n.id];
+                if (!pos) return null;
+                const color = NODE_COLORS[n.type] || '#64748b';
+                const onPath = isOnCritPath(n.id);
+                const isSel = selected === n.id;
+                const dim = showCritical && !onPath;
+                const r = n.crown ? 24 : 18;
+                return (
+                  <g key={n.id} onClick={() => setSelected(n.id)} className="cursor-pointer">
+                    {n.crown && (
+                      <circle cx={pos.x} cy={pos.y} r={r + 8} fill="none" stroke="#ea580c" strokeWidth="2" strokeDasharray="3 3" opacity="0.6">
+                        <animate attributeName="r" values={`${r+6};${r+12};${r+6}`} dur="3s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                    <circle cx={pos.x} cy={pos.y} r={r} fill="#ffffff" stroke={isSel ? '#2563eb' : onPath ? '#dc2626' : color}
+                      strokeWidth={isSel ? 3.5 : onPath ? 3 : 2} opacity={dim ? 0.3 : 1} filter="drop-shadow(0 2px 4px rgba(0,0,0,0.08))" />
+                    <text x={pos.x} y={pos.y + 1} fill={dim ? '#94a3b8' : color} fontSize="11" textAnchor="middle" dominantBaseline="middle"
+                      fontFamily="var(--font-mono)" fontWeight="bold">{n.risk}</text>
+                    <text x={pos.x} y={pos.y + r + 15} fill={dim ? '#94a3b8' : '#0f172a'} fontSize="11" textAnchor="middle"
+                      fontFamily="var(--font-sans)" fontWeight="700">
+                      {n.label.length > 18 ? n.label.slice(0,16)+'…' : n.label}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
+          </svg>
+        </div>
+
+        {/* Node Inspector Drawer */}
+        <AnimatePresence>
+          {selectedNode && (
+            <motion.div initial={{ x: 340, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 340, opacity: 0 }}
+              className="w-88 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-lg overflow-y-auto flex-shrink-0 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase font-extrabold text-blue-600 tracking-wider">Node Inspector</span>
+                <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-700"><X size={16} /></button>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-3 h-3 rounded-full" style={{ background: NODE_COLORS[selectedNode.type] }} />
-                    <span className="text-xs uppercase tracking-wider text-[var(--color-text-muted)]">{selectedNode.type}</span>
-                  </div>
-                  <h4 className="text-base font-semibold font-mono">{selectedNode.label}</h4>
-                </div>
-                <div className="bg-[var(--color-bg-tertiary)] rounded-lg p-3">
-                  <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Risk Score</div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold tabular-nums" style={{ color: selectedNode.risk > 70 ? '#ef4444' : selectedNode.risk > 40 ? '#f59e0b' : '#10b981' }}>
-                      {selectedNode.risk}
-                    </div>
-                    <span className="text-sm text-[var(--color-text-muted)]">/ 100</span>
-                  </div>
-                </div>
-                {selectedNode.detail && (
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mb-1">Details</div>
-                    <p className="text-xs text-[var(--color-text-secondary)] font-mono">{selectedNode.detail}</p>
-                  </div>
-                )}
-                {selectedNode.issue && (
-                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-red-400 mb-1">
-                      <AlertTriangle size={11} /> Issue
-                    </div>
-                    <p className="text-xs text-red-300">{selectedNode.issue}</p>
-                  </div>
-                )}
-                {selectedNode.crown && (
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
-                    <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-amber-400">
-                      <Target size={11} /> Crown Jewel Asset
-                    </div>
-                  </div>
-                )}
+              <div>
+                <h4 className="text-base font-extrabold text-slate-900 font-mono">{selectedNode.label}</h4>
+                <span className="text-xs uppercase font-bold text-slate-400">{selectedNode.type}</span>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Risk Contribution</span>
+                <div className="text-2xl font-extrabold text-slate-900 font-mono">{selectedNode.risk} <span className="text-sm text-slate-400 font-normal">/ 100</span></div>
+              </div>
+              {selectedNode.issue && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-800 space-y-1">
+                  <div className="font-bold flex items-center gap-1 text-red-700"><AlertTriangle size={12} /> Detected Issue</div>
+                  <p>{selectedNode.issue}</p>
+                </div>
+              )}
+              {selectedNode.detail && (
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-700">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Metadata</span>
+                  {selectedNode.detail}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -860,84 +1187,73 @@ function DPDPCompliancePage() {
   const displayScore = showPost ? compliance.postScore : compliance.score;
 
   return (
-    <div className="p-6 overflow-y-auto h-full space-y-6">
-      {/* Header with toggle */}
-      <div className="flex items-center justify-between">
+    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full">
+      {/* Header */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-lg font-semibold">DPDP Act Compliance — Rules 6/7/8/15</h2>
-          <p className="text-xs text-[var(--color-text-muted)] mt-1">Digital Personal Data Protection Rules, 2025 · Notified 13 Nov 2025 · Effective May 2027</p>
+          <h2 className="text-lg font-extrabold text-slate-900">DPDP Act Compliance — Rules 6, 7, 8, 15</h2>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">Digital Personal Data Protection Rules · Effective Enforceability May 2027</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--color-text-muted)]">Current</span>
+        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-xl">
+          <span className="text-xs font-bold text-slate-600">Current</span>
           <button onClick={() => setShowPost(!showPost)}
-            className={`relative w-10 h-5 rounded-full transition-colors ${showPost ? 'bg-emerald-600' : 'bg-[var(--color-bg-elevated)]'}`}>
-            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showPost ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            className={`relative w-11 h-6 rounded-full transition-colors ${showPost ? 'bg-blue-600' : 'bg-slate-300'}`}>
+            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform shadow-xs ${showPost ? 'translate-x-6' : 'translate-x-1'}`} />
           </button>
-          <span className="text-xs text-[var(--color-text-muted)]">Post-remediation</span>
+          <span className="text-xs font-bold text-blue-700">Post-Remediation (+{compliance.postScore - compliance.score}%)</span>
         </div>
       </div>
 
-      {/* Score + rules grid */}
-      <div className="grid grid-cols-12 gap-5">
-        {/* Score gauge */}
-        <div className="col-span-3 bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-6 flex flex-col items-center">
-          <span className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold mb-4">DPDP Readiness Score</span>
-          <div className="relative">
-            <RiskGauge value={displayScore} size={160} label="%" color={displayScore > 70 ? '#10b981' : displayScore > 50 ? '#f59e0b' : '#ef4444'} />
+      {/* Grid: Dial + Rule Cards */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Score Dial */}
+        <div className="col-span-12 lg:col-span-4 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-col items-center justify-center text-center">
+          <span className="text-xs uppercase font-extrabold text-slate-400 tracking-wider mb-4">DPDP Readiness Score</span>
+          <RiskGauge value={displayScore} size={160} label="READINESS %" color={displayScore > 70 ? '#059669' : displayScore > 50 ? '#f59e0b' : '#dc2626'} />
+          <div className="mt-4 text-xs font-semibold text-slate-600">
+            {displayScore > 70 ? 'Audit Ready — Low Legal Liability' : 'High Regulatory Exposure — Penalty Cap ₹250 Cr'}
           </div>
-          {showPost && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className="mt-4 flex items-center gap-1.5 text-emerald-400 text-xs font-medium">
-              <TrendingDown size={13} className="rotate-180" /> +{compliance.postScore - compliance.score}% after remediation
-            </motion.div>
-          )}
         </div>
 
-        {/* Rule cards */}
-        <div className="col-span-9 grid grid-cols-2 gap-3">
+        {/* Rule Cards */}
+        <div className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {DPDP_RULES.map(rule => {
             const status = compliance.rules[rule.id];
             if (!status) return null;
             const isExpanded = expanded === rule.id;
-            const statusColor = { pass: 'border-emerald-500/30 bg-emerald-500/5', fail: 'border-red-500/30 bg-red-500/5', warn: 'border-amber-500/30 bg-amber-500/5' };
-            const statusText = { pass: 'Passing', fail: 'Failing', warn: 'Warning' };
-            const statusIcon = { pass: CheckCircle2, fail: XCircle, warn: AlertTriangle };
-            const SIcon = statusIcon[status.s];
+            const statusStyle = {
+              pass: 'border-emerald-200 bg-emerald-50/50 text-emerald-800',
+              fail: 'border-rose-200 bg-rose-50/50 text-rose-800',
+              warn: 'border-amber-200 bg-amber-50/50 text-amber-800'
+            };
             return (
               <div key={rule.id}
-                className={`border rounded-xl p-4 cursor-pointer transition-all hover:border-opacity-60 ${statusColor[status.s]}`}
-                onClick={() => setExpanded(isExpanded ? null : rule.id)}>
+                onClick={() => setExpanded(isExpanded ? null : rule.id)}
+                className={`bg-white border rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all cursor-pointer ${
+                  status.s === 'fail' ? 'border-rose-300' : 'border-slate-200/90'
+                }`}>
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold font-mono text-[var(--color-text-primary)]">{rule.ref}</span>
-                      <SIcon size={14} className={status.s === 'pass' ? 'text-emerald-400' : status.s === 'fail' ? 'text-red-400' : 'text-amber-400'} />
-                    </div>
-                    <h4 className="text-sm font-medium mt-0.5">{rule.title}</h4>
+                    <span className="text-xs font-mono font-bold text-blue-600">{rule.ref}</span>
+                    <h4 className="text-sm font-bold text-slate-900 mt-0.5">{rule.title}</h4>
                   </div>
-                  <span className="text-lg font-bold tabular-nums" style={{ color: status.sc > 70 ? '#10b981' : status.sc > 40 ? '#f59e0b' : '#ef4444' }}>
-                    {status.sc}%
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${statusStyle[status.s]}`}>
+                    {status.s}
                   </span>
                 </div>
-                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">{rule.meaning}</p>
-                <div className="flex items-center justify-between mt-2 text-[10px] text-[var(--color-text-muted)]">
-                  <span>Penalty: {rule.penalty}</span>
-                  <span>{status.fail.length}/{status.total} resources affected</span>
+                <p className="text-xs text-slate-500 font-medium leading-snug">{rule.meaning}</p>
+                <div className="flex items-center justify-between mt-3 text-[11px] font-semibold text-slate-400">
+                  <span>Penalty: <strong className="text-slate-700">{rule.penalty}</strong></span>
+                  <span>{status.fail.length} of {status.total} failed</span>
                 </div>
-                <AnimatePresence>
-                  {isExpanded && status.fail.length > 0 && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                      className="mt-3 pt-3 border-t border-[var(--color-border)] overflow-hidden">
-                      <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mb-2">Failing Resources</div>
-                      {status.fail.map((r, i) => (
-                        <div key={i} className="flex items-center gap-2 py-1">
-                          <XCircle size={11} className="text-red-400" />
-                          <span className="text-xs font-mono text-[var(--color-text-secondary)]">{r}</span>
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {isExpanded && status.fail.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-rose-700 font-mono space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Non-Compliant Resources:</span>
+                    {status.fail.map((r, i) => (
+                      <div key={i} className="flex items-center gap-1.5">• {r}</div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -948,19 +1264,19 @@ function DPDPCompliancePage() {
 }
 
 // ============================================================
-// PAGE: REMEDIATION QUEUE
+// PAGE: REMEDIATION
 // ============================================================
 function RemediationPage() {
   const { activeScenario } = useScenario();
   const remediations = getRemediations(activeScenario);
   const [selectedRem, setSelectedRem] = useState(null);
-  const [bayesThreshold, setBayesThreshold] = useState(0.9);
+  const [bayesThreshold, setBayesThreshold] = useState(0.90);
 
   const columns = [
-    { key: 'drafted', label: 'Drafted', color: 'border-blue-500/50', bg: 'bg-blue-500' },
-    { key: 'verified', label: 'Verified', color: 'border-purple-500/50', bg: 'bg-purple-500' },
-    { key: 'approved', label: 'Approved', color: 'border-amber-500/50', bg: 'bg-amber-500' },
-    { key: 'applied', label: 'Applied', color: 'border-emerald-500/50', bg: 'bg-emerald-500' },
+    { key: 'drafted', label: 'Drafted', color: 'bg-blue-600' },
+    { key: 'verified', label: 'Verified (OPA)', color: 'bg-indigo-600' },
+    { key: 'approved', label: 'Approved', color: 'bg-amber-500' },
+    { key: 'applied', label: 'Applied', color: 'bg-emerald-600' },
   ];
 
   const grouped = useMemo(() => {
@@ -970,96 +1286,68 @@ function RemediationPage() {
   }, [remediations]);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col max-w-[1600px] mx-auto w-full p-6 md:p-8 space-y-6 overflow-hidden">
       {/* Controls */}
-      <div className="px-5 py-3 border-b border-[var(--color-border)] flex items-center gap-4">
-        <h2 className="text-sm font-semibold">Remediation Queue</h2>
-        <div className="ml-auto flex items-center gap-3">
-          <span className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)]">Bayes-cost threshold</span>
+      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-4 flex-shrink-0">
+        <div>
+          <h2 className="text-base font-extrabold text-slate-900">Remediation Action Pipeline</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Automated Least-Privilege Generation &amp; Open Policy Agent Gates</p>
+        </div>
+        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl">
+          <span className="text-xs font-bold text-slate-600">Bayes Threshold</span>
           <input type="range" min="0.5" max="0.99" step="0.01" value={bayesThreshold}
             onChange={e => setBayesThreshold(parseFloat(e.target.value))}
-            className="w-32 accent-amber-500" />
-          <span className="text-xs font-mono text-amber-400 w-10">{bayesThreshold.toFixed(2)}</span>
-          <span className="text-[10px] text-[var(--color-text-muted)]">
-            ({remediations.filter(r => r.conf >= bayesThreshold).length} auto-eligible)
-          </span>
+            className="w-28 accent-blue-600" />
+          <span className="text-xs font-mono font-bold text-blue-700">{bayesThreshold.toFixed(2)}</span>
         </div>
       </div>
 
-      {/* Kanban board */}
-      <div className="flex-1 overflow-x-auto p-5">
-        <div className="flex gap-4 h-full min-w-[900px]">
+      {/* Kanban Board */}
+      <div className="flex-1 overflow-x-auto pb-4">
+        <div className="flex gap-6 h-full min-w-[1000px]">
           {columns.map(col => (
-            <div key={col.key} className="flex-1 flex flex-col min-w-[220px]">
-              <div className={`flex items-center gap-2 pb-3 border-b-2 ${col.color} mb-3`}>
-                <div className={`w-2 h-2 rounded-full ${col.bg}`} />
-                <span className="text-xs font-semibold uppercase tracking-wider">{col.label}</span>
-                <span className="ml-auto text-xs text-[var(--color-text-muted)] tabular-nums">{grouped[col.key].length}</span>
+            <div key={col.key} className="flex-1 flex flex-col min-w-[240px] bg-slate-100/60 rounded-2xl p-4 border border-slate-200/80">
+              <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${col.color}`} />
+                  <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">{col.label}</span>
+                </div>
+                <span className="text-xs font-bold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200">
+                  {grouped[col.key].length}
+                </span>
               </div>
-              <div className="space-y-3 flex-1 overflow-y-auto">
+              <div className="space-y-3 flex-1 overflow-y-auto pr-1">
                 {grouped[col.key].map(r => (
                   <motion.div key={r.id} layout onClick={() => setSelectedRem(selectedRem === r.id ? null : r.id)}
-                    className={`bg-[var(--color-bg-card)] border rounded-xl p-3.5 cursor-pointer transition-all hover:border-[var(--color-text-muted)] ${
-                      r.sev === 'critical' ? 'border-red-500/20' : 'border-[var(--color-border)]'
-                    }`}>
-                    <div className="flex items-start justify-between mb-2">
+                    className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all cursor-pointer space-y-2">
+                    <div className="flex items-center justify-between">
                       <SeverityBadge severity={r.sev} />
-                      {r.conf >= bayesThreshold && (
-                        <span className="text-[9px] bg-emerald-500/15 text-emerald-400 px-1.5 py-0.5 rounded font-medium">AUTO</span>
-                      )}
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                        conf: {(r.conf * 100).toFixed(0)}%
+                      </span>
                     </div>
-                    <h4 className="text-sm font-medium mb-1">{r.title}</h4>
-                    <p className="text-xs font-mono text-[var(--color-text-muted)] mb-2">{r.resource}</p>
-                    
-                    {/* Risk delta */}
-                    <div className="flex items-center gap-2 text-xs mb-2">
-                      <span className="text-red-400 tabular-nums">{r.rBefore}</span>
-                      <ArrowRight size={10} className="text-[var(--color-text-muted)]" />
-                      <span className="text-emerald-400 tabular-nums">{r.rAfter}</span>
-                      <span className="text-[var(--color-text-muted)]">risk</span>
+                    <h4 className="text-xs font-bold text-slate-900">{r.title}</h4>
+                    <p className="text-[11px] font-mono text-slate-500 truncate">{r.resource}</p>
+                    <div className="flex items-center gap-2 text-xs font-bold">
+                      <span className="text-rose-600">{r.rBefore}</span>
+                      <ArrowRight size={12} className="text-slate-400" />
+                      <span className="text-emerald-600">{r.rAfter}</span>
+                      <span className="text-[10px] font-normal text-slate-400">risk delta</span>
                     </div>
-
-                    {/* Verification checks */}
-                    <div className="flex items-center gap-2 text-[10px]">
-                      <span className={r.checks.gen ? 'text-emerald-400' : 'text-red-400'}>{r.checks.gen ? '✓' : '✗'} Policy</span>
-                      <span className={r.checks.dpdp ? 'text-emerald-400' : 'text-red-400'}>{r.checks.dpdp ? '✓' : '✗'} DPDP</span>
-                      <span className={r.checks.risk ? 'text-emerald-400' : 'text-red-400'}>{r.checks.risk ? '✓' : '✗'} Risk↓</span>
-                    </div>
-
-                    {/* DPDP rules satisfied */}
-                    {r.dpdp.length > 0 && (
-                      <div className="flex gap-1.5 mt-2">
-                        {r.dpdp.map(d => (
-                          <span key={d} className="text-[9px] bg-cyan-500/15 text-cyan-400 px-1.5 py-0.5 rounded font-mono">{d}</span>
-                        ))}
+                    {/* Expandable diff */}
+                    {selectedRem === r.id && (
+                      <div className="mt-3 pt-3 border-t border-slate-100 space-y-2 text-[10px] font-mono">
+                        <div className="bg-rose-50 border border-rose-200 rounded-lg p-2.5 text-rose-800 whitespace-pre-wrap">
+                          <strong className="block text-rose-900 mb-1">ORIGINAL CONFIG</strong>
+                          {r.before}
+                        </div>
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-emerald-800 whitespace-pre-wrap">
+                          <strong className="block text-emerald-900 mb-1">REMEDIATED PATCH</strong>
+                          {r.after}
+                        </div>
+                        <p className="text-xs font-sans text-slate-600">{r.explanation}</p>
                       </div>
                     )}
-
-                    {/* Expanded diff */}
-                    <AnimatePresence>
-                      {selectedRem === r.id && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                          className="mt-3 pt-3 border-t border-[var(--color-border)] overflow-hidden">
-                          <div className="text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] mb-2">Infrastructure Diff</div>
-                          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                            <div className="bg-red-500/5 rounded-lg p-2 border border-red-500/10">
-                              <div className="text-[9px] text-red-400 mb-1">BEFORE</div>
-                              <pre className="text-red-300/80 whitespace-pre-wrap text-[10px] leading-relaxed">{r.before}</pre>
-                            </div>
-                            <div className="bg-emerald-500/5 rounded-lg p-2 border border-emerald-500/10">
-                              <div className="text-[9px] text-emerald-400 mb-1">AFTER</div>
-                              <pre className="text-emerald-300/80 whitespace-pre-wrap text-[10px] leading-relaxed">{r.after}</pre>
-                            </div>
-                          </div>
-                          <p className="text-xs text-[var(--color-text-secondary)] mt-2 leading-relaxed">{r.explanation}</p>
-                          {r.status === 'verified' && (
-                            <button className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
-                              <Check size={14} /> Approve & Apply
-                            </button>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </motion.div>
                 ))}
               </div>
@@ -1075,32 +1363,74 @@ function RemediationPage() {
 // PAGE: SETTINGS
 // ============================================================
 function SettingsPage() {
+  const [settings, setSettings] = useState({
+    autoApply: true,
+    dpdpAlerts: true,
+    liveRefresh: true,
+    damping: 0.85,
+    bayesThreshold: 0.90,
+  });
+
   return (
-    <div className="p-6 overflow-y-auto h-full">
-      <h2 className="text-lg font-semibold mb-6">System Configuration</h2>
-      <div className="max-w-2xl space-y-6">
-        {[
-          { title: 'Cartography Ingestion', items: ['Source: AWS (IAM, EC2, S3, VPC, RDS, Lambda)', 'Schedule: Every 15 minutes', 'Last run: 2 min ago · 47 resources ingested', 'Graph store: Neo4j Community 5.x'] },
-          { title: 'Risk Engine', items: ['Algorithm: Personalized PageRank (damping c=0.85)', 'Edge weights: CIS Benchmark severity heuristics', 'Entry nodes: Public-facing resources (EC2 with public IP)', 'GNN layer: Not enabled (Stretch goal)'] },
-          { title: 'Stackelberg Game', items: ['Solver: PuLP (CBC backend)', 'Budget B: 3 remediations per cycle', 'Payoff source: PageRank risk scores', 'Solve time: <50ms'] },
-          { title: 'Remediation Pipeline', items: ['LLM: Claude Sonnet (structured JSON output)', 'RAG context: CIS controls + DPDP rule text + fix templates', 'Output format: Terraform HCL patch (schema-validated)', 'Fallback: Structured escalation (never free-form)'] },
-          { title: 'Verification Gate', items: ['Policy engine: Open Policy Agent + Rego', 'Libraries: Generic (CIS-style) + DPDP (Rule 6/7/8/15)', 'Risk regression: Full PageRank re-run on simulated graph', 'Bayes-cost threshold: Configurable (default 0.90)'] },
-        ].map(section => (
-          <div key={section.title} className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-xl p-5">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Settings size={14} className="text-[var(--color-text-muted)]" />
-              {section.title}
-            </h3>
-            <div className="space-y-1.5">
-              {section.items.map((item, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs">
-                  <Minus size={10} className="text-[var(--color-text-muted)] mt-1 flex-shrink-0" />
-                  <span className="text-[var(--color-text-secondary)]">{item}</span>
-                </div>
-              ))}
+    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1200px] mx-auto w-full">
+      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-extrabold text-slate-900">System Configuration</h2>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">ARGUS Engine, Policy Gates, and Algorithmic Parameters</p>
+        </div>
+        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg flex items-center gap-1.5">
+          <CheckCircle2 size={13} /> Engine Active
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-4">
+          <h3 className="text-sm font-extrabold text-slate-900">Risk Solver Parameters</h3>
+          <div className="space-y-3 text-xs">
+            <div>
+              <div className="flex justify-between font-bold text-slate-700 mb-1">
+                <span>PageRank Damping Factor</span>
+                <span className="font-mono text-blue-600">{settings.damping}</span>
+              </div>
+              <input type="range" min="0.5" max="0.99" step="0.01" value={settings.damping}
+                onChange={e => setSettings(s => ({ ...s, damping: parseFloat(e.target.value) }))}
+                className="w-full accent-blue-600" />
+            </div>
+            <div>
+              <div className="flex justify-between font-bold text-slate-700 mb-1">
+                <span>Bayesian Auto-Apply Cutoff</span>
+                <span className="font-mono text-blue-600">{settings.bayesThreshold}</span>
+              </div>
+              <input type="range" min="0.5" max="0.99" step="0.01" value={settings.bayesThreshold}
+                onChange={e => setSettings(s => ({ ...s, bayesThreshold: parseFloat(e.target.value) }))}
+                className="w-full accent-blue-600" />
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-4">
+          <h3 className="text-sm font-extrabold text-slate-900">Automation &amp; Alerts</h3>
+          <div className="space-y-3 text-xs">
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="font-bold text-slate-700">Auto-Apply Safe Remediations</span>
+              <input type="checkbox" checked={settings.autoApply}
+                onChange={e => setSettings(s => ({ ...s, autoApply: e.target.checked }))}
+                className="w-4 h-4 accent-blue-600" />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="font-bold text-slate-700">DPDP High-Penalty Alerts</span>
+              <input type="checkbox" checked={settings.dpdpAlerts}
+                onChange={e => setSettings(s => ({ ...s, dpdpAlerts: e.target.checked }))}
+                className="w-4 h-4 accent-blue-600" />
+            </label>
+            <label className="flex items-center justify-between cursor-pointer">
+              <span className="font-bold text-slate-700">Telemetry Live Refresh (30s)</span>
+              <input type="checkbox" checked={settings.liveRefresh}
+                onChange={e => setSettings(s => ({ ...s, liveRefresh: e.target.checked }))}
+                className="w-4 h-4 accent-blue-600" />
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1111,10 +1441,9 @@ function SettingsPage() {
 // ============================================================
 function ChatPanel({ isOpen, onClose }) {
   const [messages, setMessages] = useState([
-    { role: 'assistant', text: 'I\'m ARGUS. Ask me about your security posture, DPDP compliance status, attack paths, or remediation priorities.' }
+    { role: 'assistant', text: 'I am ARGUS AI Assistant. Inquire about attack paths, DPDP liability exposure, or Stackelberg priorities.' }
   ]);
   const [input, setInput] = useState('');
-  const [typing, setTyping] = useState(false);
   const bottomRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -1124,92 +1453,51 @@ function ChatPanel({ isOpen, onClose }) {
     if (!question.trim()) return;
     setMessages(prev => [...prev, { role: 'user', text: question }]);
     setInput('');
-    setTyping(true);
     setTimeout(() => {
       setMessages(prev => [...prev, { role: 'assistant', text: getChatReply(question) }]);
-      setTyping(false);
-    }, 800 + Math.random() * 600);
+    }, 400);
   };
 
   if (!isOpen) return null;
 
   return (
     <motion.div initial={{ x: 400, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 400, opacity: 0 }}
-      className="w-96 border-l border-[var(--color-border)] bg-[var(--color-bg-secondary)] flex flex-col h-full">
-      {/* Header */}
-      <div className="h-14 border-b border-[var(--color-border)] flex items-center justify-between px-4">
+      className="w-96 border-l border-slate-200 bg-white flex flex-col h-full shadow-2xl z-40">
+      <div className="h-16 border-b border-slate-200 flex items-center justify-between px-5">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-            <Bot size={14} className="text-white" />
+          <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white">
+            <Bot size={16} />
           </div>
-          <span className="text-sm font-semibold">Ask ARGUS</span>
+          <span className="text-sm font-bold text-slate-900">Ask ARGUS</span>
         </div>
-        <button onClick={onClose} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"><X size={16} /></button>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
       </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
         {messages.map((m, i) => (
-          <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-              m.role === 'user' ? 'bg-[var(--color-bg-elevated)]' : 'bg-gradient-to-br from-violet-500 to-purple-600'
+          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`p-3 rounded-2xl max-w-[85%] leading-relaxed ${
+              m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none font-medium'
             }`}>
-              {m.role === 'user' ? <User size={12} /> : <Bot size={12} className="text-white" />}
-            </div>
-            <div className={`max-w-[280px] rounded-xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
-              m.role === 'user'
-                ? 'bg-[var(--color-bg-elevated)] text-[var(--color-text-primary)]'
-                : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]'
-            }`}>
-              {m.text.split('\n').map((line, j) => {
-                if (line.startsWith('**') && line.endsWith('**')) return <p key={j} className="font-semibold text-[var(--color-text-primary)]">{line.replace(/\*\*/g, '')}</p>;
-                if (line.startsWith('• ')) return <p key={j} className="ml-2">• {line.slice(2)}</p>;
-                if (line.startsWith('`') && line.endsWith('`')) return <code key={j} className="bg-[var(--color-bg-primary)] px-1.5 py-0.5 rounded text-xs font-mono">{line.replace(/`/g, '')}</code>;
-                return <p key={j}>{line || '\u00A0'}</p>;
-              })}
+              {m.text}
             </div>
           </div>
         ))}
-        {typing && (
-          <div className="flex gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-              <Bot size={12} className="text-white" />
-            </div>
-            <div className="bg-[var(--color-bg-tertiary)] rounded-xl px-3.5 py-2.5">
-              <div className="flex gap-1">
-                {[0, 1, 2].map(i => (
-                  <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-muted)]"
-                    animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }} />
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
-
-      {/* Suggestions */}
-      <div className="px-4 pb-2">
-        <div className="flex flex-wrap gap-1.5">
-          {CHAT_SUGGESTIONS.slice(0, 3).map(s => (
-            <button key={s} onClick={() => send(s)}
-              className="text-[10px] bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-muted)] px-2 py-1 rounded-lg hover:text-[var(--color-text-secondary)] hover:border-[var(--color-text-muted)] transition-colors">
+      <div className="p-3 border-t border-slate-200 space-y-2">
+        <div className="flex flex-wrap gap-1">
+          {CHAT_SUGGESTIONS.slice(0, 2).map(s => (
+            <button key={s} onClick={() => send(s)} className="text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-slate-600">
               {s}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Input */}
-      <div className="p-3 border-t border-[var(--color-border)]">
-        <div className="flex items-center gap-2 bg-[var(--color-bg-tertiary)] rounded-xl px-3 py-2 border border-[var(--color-border)] focus-within:border-[var(--color-text-muted)]">
+        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
-            placeholder="Ask about your security posture..."
-            className="flex-1 bg-transparent text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] outline-none" />
-          <button onClick={() => send()} className="text-amber-400 hover:text-amber-300 transition-colors">
-            <Send size={16} />
-          </button>
+            placeholder="Ask security question..."
+            className="flex-1 bg-transparent text-xs text-slate-800 outline-none" />
+          <button onClick={() => send()} className="text-blue-600 hover:text-blue-800 font-bold"><Send size={15} /></button>
         </div>
       </div>
     </motion.div>
@@ -1235,6 +1523,7 @@ function AppShell() {
 
   const pages = {
     overview: OverviewPage,
+    findings: FindingsPage,
     graph: AttackGraphPage,
     dpdp: DPDPCompliancePage,
     remediation: RemediationPage,
@@ -1243,30 +1532,30 @@ function AppShell() {
   const PageComponent = pages[activePage] || OverviewPage;
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-full w-full bg-[#ebf1f6] overflow-hidden">
       <Sidebar active={activePage} onNav={setActivePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <TopBar scenarioId={activeScenario} onScenarioChange={setActiveScenario} />
-        <div className="flex-1 flex min-h-0">
-          <div className="flex-1 min-w-0 overflow-hidden">
+        <div className="flex-1 flex min-h-0 overflow-hidden">
+          <main className="flex-1 min-w-0 overflow-y-auto">
             <AnimatePresence mode="wait">
               <motion.div key={activePage + activeScenario}
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2 }} className="h-full">
+                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }} className="h-full">
                 <PageComponent />
               </motion.div>
             </AnimatePresence>
-          </div>
+          </main>
           <AnimatePresence>
             {chatOpen && <ChatPanel isOpen={chatOpen} onClose={() => setChatOpen(false)} />}
           </AnimatePresence>
         </div>
       </div>
 
-      {/* Chat FAB */}
+      {/* Floating Chat Button */}
       {!chatOpen && (
         <button onClick={() => setChatOpen(true)}
-          className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 flex items-center justify-center hover:shadow-purple-500/40 hover:scale-105 transition-all z-50">
+          className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 flex items-center justify-center hover:scale-105 transition-all z-50">
           <MessageSquare size={20} />
         </button>
       )}
