@@ -311,29 +311,30 @@ function RiskGauge({ value, size = 130, label, color }) {
   );
 }
 
-// KPI Metric Card matching Reference Image 1
+// Modern executive KPI Metric Card
 function MetricCard({ title, value, subtext, suffix, accentColor = '#2563eb', alertText }) {
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden group">
+    <div 
+      className="bg-white border-x border-b border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group"
+      style={{ borderTop: `4px solid ${accentColor}` }}
+    >
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">{title}</span>
+          <span className="text-[11px] uppercase font-extrabold text-slate-400 tracking-wider block leading-tight">{title}</span>
         </div>
-        <div className="flex items-baseline gap-1 my-1">
+        <div className="flex items-baseline gap-2 my-1">
           <span className="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">
             {typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
           </span>
-          {suffix && <span className="text-sm font-semibold text-slate-400">{suffix}</span>}
+          {suffix && <span className="text-xs font-bold text-slate-400 font-mono">{suffix}</span>}
         </div>
-        {subtext && <p className="text-xs text-slate-500 font-medium mt-1 leading-snug">{subtext}</p>}
+        {subtext && <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">{subtext}</p>}
         {alertText && (
-          <div className="text-[11px] font-semibold text-amber-600 mt-2 flex items-center gap-1">
-            <AlertTriangle size={12} /> {alertText}
+          <div className="text-[11px] font-bold text-amber-700 mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
+            <AlertTriangle size={13} className="text-amber-600 flex-shrink-0" /> {alertText}
           </div>
         )}
       </div>
-      {/* Bottom accent colored indicator line */}
-      <div className="h-1 -mx-5 -mb-5 mt-4 rounded-b-2xl transition-all" style={{ backgroundColor: accentColor }} />
     </div>
   );
 }
@@ -352,7 +353,7 @@ const NAV_ITEMS = [
 
 function Sidebar({ active, onNav, collapsed, onToggle }) {
   return (
-    <aside className={`h-full bg-white border-r border-slate-200/90 flex flex-col transition-all duration-300 z-20 flex-shrink-0 ${collapsed ? 'w-18' : 'w-60'}`}>
+    <aside className={`h-full bg-white border-r border-slate-200/90 flex flex-col transition-all duration-300 z-20 flex-shrink-0 ${collapsed ? 'w-20' : 'w-64'}`}>
       {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-100">
         <button onClick={onToggle} className="flex items-center gap-3 text-left w-full hover:opacity-90 transition-opacity">
@@ -374,7 +375,7 @@ function Sidebar({ active, onNav, collapsed, onToggle }) {
           const isActive = active === item.id;
           return (
             <button key={item.id} onClick={() => onNav(item.id)}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
+              className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-150 ${
                 isActive
                   ? 'bg-blue-50 text-blue-700 border border-blue-100 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -417,11 +418,11 @@ function TopBar({ scenarioId, onScenarioChange }) {
   const [open, setOpen] = useState(false);
   const sc = SCENARIOS[scenarioId];
   return (
-    <header className="h-16 bg-white border-b border-slate-200/90 flex items-center justify-between px-6 z-10 flex-shrink-0">
+    <header className="h-16 bg-white border-b border-slate-200/90 flex items-center justify-between px-8 z-10 flex-shrink-0">
       <div className="flex items-center gap-4">
         <div className="relative">
           <button onClick={() => setOpen(!open)}
-            className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-semibold text-slate-800 transition-colors shadow-2xs">
+            className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-800 transition-colors shadow-2xs">
             <Zap size={15} className="text-blue-600" />
             <span className="max-w-[320px] truncate">{sc.shortName}</span>
             <ChevronDown size={14} className="text-slate-400" />
@@ -442,11 +443,11 @@ function TopBar({ scenarioId, onScenarioChange }) {
           </AnimatePresence>
         </div>
       </div>
-      <div className="flex items-center gap-3 text-xs">
-        <div className="flex items-center gap-1.5 bg-slate-50 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 font-semibold">
+      <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-1.5 bg-slate-50 text-slate-600 px-3.5 py-2 rounded-xl border border-slate-200 font-semibold">
           <Clock size={13} className="text-slate-400" /> Last scan: 2 min ago
         </div>
-        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold">
+        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3.5 py-2 rounded-xl border border-emerald-200 font-bold">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Guard Active
         </div>
       </div>
@@ -528,75 +529,82 @@ function OverviewPage() {
 
   return (
     <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full">
-      {/* 1. Top Posture Banner (Inspired directly by reference image 1) */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-6 flex-wrap text-xs">
+      {/* 1. Top Posture Banner (Spacious Executive Bar) */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] flex items-center justify-between gap-6 flex-wrap">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 items-center flex-1 min-w-[320px]">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">SESSION</span>
-            <span className="font-extrabold text-slate-800 text-sm">Posture Audit</span>
+            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">SESSION</span>
+            <span className="font-extrabold text-slate-900 text-sm flex items-center gap-2 leading-snug">
+              <Activity size={15} className="text-blue-600 flex-shrink-0" /> Posture Audit
+            </span>
           </div>
-          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
+
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">STATUS</span>
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
+            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">AUDIT STATUS</span>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold leading-none ${
               scenario.riskScore > 70 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
             }`}>
               <span className={`w-2 h-2 rounded-full ${scenario.riskScore > 70 ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse`} />
               {scenario.riskScore > 70 ? 'OVERLOADED RISK' : 'ELEVATED RISK'}
             </span>
           </div>
-          <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
+
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">TARGET DEVICE</span>
-            <span className="font-bold text-slate-700 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" /> Connected · AWS us-east-1
+            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">TARGET DEVICE</span>
+            <span className="font-semibold text-slate-700 text-xs flex items-center gap-2 leading-snug">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" /> AWS us-east-1
             </span>
           </div>
-          <div className="h-8 w-[1px] bg-slate-200 hidden md:block" />
-          <div className="hidden md:block">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">OPTIMAL SOLVER</span>
-            <span className="font-bold text-blue-600">Stackelberg LP + GNN</span>
-          </div>
-          <div className="h-8 w-[1px] bg-slate-200 hidden lg:block" />
+
           <div className="hidden lg:block">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">COMPLIANCE ENGINE</span>
-            <span className="font-bold text-emerald-700 flex items-center gap-1">
-              <CheckCircle2 size={13} /> DPDP 2025 Active
+            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">OPTIMAL SOLVER</span>
+            <span className="font-bold text-blue-600 text-xs leading-snug">Stackelberg LP + GNN</span>
+          </div>
+
+          <div className="hidden lg:block">
+            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">COMPLIANCE ENGINE</span>
+            <span className="font-bold text-emerald-700 text-xs flex items-center gap-1.5 leading-snug">
+              <CheckCircle2 size={14} className="flex-shrink-0" /> DPDP 2025 Active
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-300/80 rounded-xl transition-colors shadow-2xs">
+
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button className="px-4 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors shadow-2xs">
             Run Scan Cycle
           </button>
-          <div className="text-xl font-extrabold font-mono text-blue-600 bg-blue-50 border border-blue-200 px-3.5 py-1.5 rounded-xl tabular-nums">
+          <div className="text-base font-extrabold font-mono text-blue-600 bg-blue-50 border border-blue-200 px-3.5 py-2 rounded-xl tabular-nums">
             00:15
           </div>
         </div>
       </div>
 
-      {/* 2. Target Scenario Strip */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="font-extrabold text-slate-900 text-sm">{scenario.name}</span>
-          <span className="text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded-lg">
-            PRIORITY FIX #1: R-001
-          </span>
-          <span className="text-[11px] font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-0.5 rounded-lg">
-            ATTACK HOPS: 7
-          </span>
-          <span className="text-[11px] font-bold bg-rose-50 text-rose-800 border border-rose-200 px-2.5 py-0.5 rounded-lg">
-            DPDP PENALTY: ₹250 CR
-          </span>
-          <span className="text-xs text-slate-500 hidden xl:inline font-medium">Recommended: sever cross-role bridge to isolate crown jewel</span>
+      {/* 2. Target Scenario Hero Strip */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <span className="w-3 h-3 rounded-full bg-blue-600" />
+            <h2 className="font-extrabold text-slate-900 text-base">{scenario.name}</h2>
+          </div>
+          <div className="flex items-center gap-2.5 flex-wrap text-xs">
+            <span className="font-bold bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-lg">
+              PRIORITY FIX #1: R-001
+            </span>
+            <span className="font-bold bg-blue-50 text-blue-800 border border-blue-200 px-3 py-1 rounded-lg">
+              ATTACK HOPS: 7
+            </span>
+            <span className="font-bold bg-rose-50 text-rose-800 border border-rose-200 px-3 py-1 rounded-lg">
+              DPDP PENALTY: ₹250 CR
+            </span>
+          </div>
         </div>
         <button onClick={() => setActiveScenario(activeScenario === 'iam_escalation' ? 'dpdp_violation' : 'iam_escalation')}
-          className="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-50 border border-slate-300 px-3.5 py-1.5 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs">
+          className="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs">
           Change Scenario
         </button>
       </div>
 
-      {/* 3. Five KPI Metric Cards (Generous room, clear typography, clean accent lines) */}
+      {/* 3. Five KPI Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         <MetricCard
           title="ATTACK RISK SCORE"
@@ -636,14 +644,14 @@ function OverviewPage() {
         />
       </div>
 
-      {/* 4. Main Charts Section (Spacious 2-column layout) */}
+      {/* 4. Main Analytics Charts Section */}
       <div className="grid grid-cols-12 gap-6">
-        {/* Left Column: Stackelberg Prioritization + Neural Risk Rankings */}
-        <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)] space-y-6">
+        {/* Left Column: Stackelberg Prioritization + Risk Activation */}
+        <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-extrabold text-slate-900">Stackelberg vs Naive Prioritization</h3>
-              <p className="text-xs text-slate-500 mt-0.5 font-medium">Lower rank number = higher urgency. Game theory re-allocates budget away from naive severity.</p>
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">Comparison of Game-Theoretic Priority Rank vs Traditional Severity Rank (Lower # = Higher Urgency)</p>
             </div>
             <div className="flex items-center gap-4 text-xs font-bold">
               <div className="flex items-center gap-1.5 text-blue-700"><div className="w-3 h-3 rounded-md bg-blue-600" /> Stackelberg LP</div>
@@ -651,11 +659,11 @@ function OverviewPage() {
             </div>
           </div>
 
-          <div className="w-full">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={chartData} margin={{ top: 10, right: 10, bottom: 25, left: -20 }}>
-                <XAxis dataKey="id" tick={{ fill: '#475569', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-mono)' }} />
-                <YAxis reversed tick={{ fill: '#475569', fontSize: 12 }} domain={[0, chartData.length + 1]} tickFormatter={v => `#${v}`} />
+          <div className="w-full mb-4">
+            <ResponsiveContainer width="100%" height={230}>
+              <BarChart data={chartData} margin={{ top: 15, right: 20, bottom: 20, left: 15 }}>
+                <XAxis dataKey="id" tick={{ fill: '#475569', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)' }} dy={4} />
+                <YAxis tick={{ fill: '#475569', fontSize: 11 }} domain={[0, 8]} tickFormatter={v => `Rank #${v}`} dx={-6} width={58} />
                 <RTooltip content={<CustomTooltip />} />
                 <Bar dataKey="stackelberg" name="Stackelberg Rank" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={28} />
                 <Bar dataKey="naive" name="Naive Rank" fill="#cbd5e1" radius={[6, 6, 0, 0]} maxBarSize={28} />
@@ -663,101 +671,107 @@ function OverviewPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Neural Region Activation / Risk Impact Rankings (Directly inspired by Image 1) */}
-          <div className="border-t border-slate-100 pt-5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] uppercase tracking-wider font-extrabold text-slate-400">NEURAL RESOURCE RISK ACTIVATION</span>
-              <span className="text-xs text-slate-500 font-semibold">Normalized Risk</span>
+          {/* Neural Resource Risk Activation */}
+          <div className="border-t border-slate-200 pt-6 mt-6 space-y-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">NEURAL RESOURCE RISK ACTIVATION</span>
+              <span className="text-xs text-slate-500 font-semibold">Normalized Impact Score</span>
             </div>
-            {chartData.slice(0, 4).map(f => (
-              <div key={f.id} className="space-y-1">
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className="font-mono text-slate-700">{f.id} — {f.name}</span>
-                  <span className="font-bold tabular-nums" style={{ color: sevColors[f.severity] }}>{f.risk} / 100</span>
+            <div className="space-y-4">
+              {chartData.slice(0, 4).map(f => (
+                <div key={f.id} className="space-y-2 pb-1">
+                  <div className="flex items-center justify-between text-xs font-semibold gap-4 mb-1">
+                    <span className="font-mono text-slate-800 truncate">{f.id} — {f.name}</span>
+                    <span className="font-bold tabular-nums font-mono flex-shrink-0" style={{ color: sevColors[f.severity] }}>{f.risk} / 100</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/60">
+                    <motion.div className="h-full rounded-full" style={{ backgroundColor: sevColors[f.severity] }}
+                      initial={{ width: 0 }} animate={{ width: `${f.risk}%` }} transition={{ duration: 1, delay: 0.2 }} />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                  <motion.div className="h-full rounded-full" style={{ backgroundColor: sevColors[f.severity] }}
-                    initial={{ width: 0 }} animate={{ width: `${f.risk}%` }} transition={{ duration: 1, delay: 0.2 }} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Score Trend, Pipeline & Activity */}
+        {/* Right Column: Score Trend, Pipeline & Security Events */}
         <div className="col-span-12 lg:col-span-5 space-y-6">
           {/* Risk Trend Chart */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-4">
+            <div className="flex items-center justify-between mb-1">
               <div>
                 <h3 className="text-sm font-extrabold text-slate-900">Posture Score Trend</h3>
-                <span className="text-xs text-slate-500 font-medium">Last 15 minutes of live telemetry</span>
+                <span className="text-xs text-slate-500 font-medium">15-minute telemetry window</span>
               </div>
               <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                Live · 30s refresh
+                Live · 30s
               </span>
             </div>
-            <ResponsiveContainer width="100%" height={120}>
-              <AreaChart data={trendData} margin={{ top: 5, right: 5, bottom: 0, left: -25 }}>
-                <defs>
-                  <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#dc2626" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="dpdpGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="t" tick={{ fill: '#64748b', fontSize: 11 }} />
-                <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} />
-                <RTooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="risk" name="Risk Score" stroke="#dc2626" strokeWidth={2.5} fill="url(#riskGrad)" />
-                <Area type="monotone" dataKey="dpdp" name="DPDP Score" stroke="#2563eb" strokeWidth={2.5} fill="url(#dpdpGrad)" />
-              </AreaChart>
-            </ResponsiveContainer>
-            <div className="flex items-center justify-center gap-6 mt-3 text-xs font-bold">
-              <div className="flex items-center gap-1.5 text-red-600"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Attack Risk</div>
+            
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={190}>
+                <AreaChart data={trendData} margin={{ top: 10, right: 10, bottom: 15, left: 0 }}>
+                  <defs>
+                    <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#dc2626" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="dpdpGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="t" tick={{ fill: '#64748b', fontSize: 11 }} dy={2} />
+                  <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} dx={-4} width={28} />
+                  <RTooltip content={<CustomTooltip />} />
+                  <Area type="monotone" dataKey="risk" name="Risk Score" stroke="#dc2626" strokeWidth={2.5} fill="url(#riskGrad)" />
+                  <Area type="monotone" dataKey="dpdp" name="DPDP Score" stroke="#2563eb" strokeWidth={2.5} fill="url(#dpdpGrad)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            
+            <div className="flex items-center justify-center gap-6 pt-4 text-xs font-bold border-t border-slate-200 mt-4">
+              <div className="flex items-center gap-1.5 text-rose-600"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Attack Risk Score</div>
               <div className="flex items-center gap-1.5 text-blue-600"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> DPDP Compliance</div>
             </div>
           </div>
 
-          {/* Remediation Pipeline status chips */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
-            <div className="flex items-center justify-between mb-3">
+          {/* Remediation Pipeline Status Grid */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-4">
+            <div className="flex items-center justify-between mb-1">
               <h3 className="text-sm font-extrabold text-slate-900">Remediation Pipeline</h3>
-              <span className="text-xs font-bold text-blue-600">{remediations.length} Actions</span>
+              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">{remediations.length} Active Actions</span>
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                <div className="text-lg font-extrabold text-slate-800">{pipeline.drafted}</div>
-                <div className="text-[10px] uppercase font-bold text-slate-500">Drafted</div>
+            <div className="grid grid-cols-4 gap-3">
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-center">
+                <div className="text-2xl font-extrabold text-slate-800">{pipeline.drafted}</div>
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mt-0.5">Drafted</div>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-                <div className="text-lg font-extrabold text-blue-700">{pipeline.verified}</div>
-                <div className="text-[10px] uppercase font-bold text-blue-600">Verified</div>
+              <div className="bg-blue-50 border border-blue-200/80 rounded-xl p-3.5 text-center">
+                <div className="text-2xl font-extrabold text-blue-700">{pipeline.verified}</div>
+                <div className="text-[11px] font-bold text-blue-700 uppercase tracking-wide mt-0.5">Verified</div>
               </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-                <div className="text-lg font-extrabold text-amber-700">{pipeline.approved}</div>
-                <div className="text-[10px] uppercase font-bold text-amber-600">Approved</div>
+              <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3.5 text-center">
+                <div className="text-2xl font-extrabold text-amber-700">{pipeline.approved}</div>
+                <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mt-0.5">Approved</div>
               </div>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                <div className="text-lg font-extrabold text-emerald-700">{pipeline.applied}</div>
-                <div className="text-[10px] uppercase font-bold text-emerald-600">Applied</div>
+              <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3.5 text-center">
+                <div className="text-2xl font-extrabold text-emerald-700">{pipeline.applied}</div>
+                <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mt-0.5">Applied</div>
               </div>
             </div>
           </div>
 
-          {/* Recent Security Activity Feed */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
-            <h3 className="text-sm font-extrabold text-slate-900 mb-3.5">Recent Security Events</h3>
+          {/* Recent Security Activity Stream */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-4">
+            <h3 className="text-sm font-extrabold text-slate-900 mb-1">Recent Security Activity</h3>
             <div className="space-y-3">
               {activity.map((a, i) => (
-                <div key={i} className="flex items-start gap-3 text-xs">
+                <div key={i} className="flex items-start gap-3.5 text-xs p-3.5 bg-slate-50/60 border border-slate-200/80 rounded-xl hover:bg-slate-50 transition-colors">
                   <a.icon size={16} className={`${a.color} mt-0.5 flex-shrink-0`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-slate-800 font-semibold leading-snug">{a.text}</p>
-                    <span className="text-[10px] text-slate-400 font-medium">{a.time}</span>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <p className="text-slate-800 font-semibold leading-relaxed">{a.text}</p>
+                    <span className="text-[11px] text-slate-400 font-medium font-mono block">{a.time}</span>
                   </div>
                 </div>
               ))}
@@ -1187,7 +1201,7 @@ function DPDPCompliancePage() {
   const displayScore = showPost ? compliance.postScore : compliance.score;
 
   return (
-    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full">
+    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full pr-8">
       {/* Header */}
       <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -1229,7 +1243,7 @@ function DPDPCompliancePage() {
             return (
               <div key={rule.id}
                 onClick={() => setExpanded(isExpanded ? null : rule.id)}
-                className={`bg-white border rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all cursor-pointer ${
+                className={`bg-white border rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all cursor-pointer overflow-visible ${
                   status.s === 'fail' ? 'border-rose-300' : 'border-slate-200/90'
                 }`}>
                 <div className="flex items-start justify-between mb-2">
@@ -1237,7 +1251,7 @@ function DPDPCompliancePage() {
                     <span className="text-xs font-mono font-bold text-blue-600">{rule.ref}</span>
                     <h4 className="text-sm font-bold text-slate-900 mt-0.5">{rule.title}</h4>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${statusStyle[status.s]}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase flex-shrink-0 ${statusStyle[status.s]}`}>
                     {status.s}
                   </span>
                 </div>

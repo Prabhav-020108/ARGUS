@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary: #edf2f7;
+  --color-bg-primary: #f8fafc;
   --color-bg-secondary: #ffffff;
-  --color-bg-tertiary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
   --color-bg-card: #ffffff;
-  --color-bg-elevated: #f1f5f9;
-  --color-border: #cbd5e1;
-  --color-border-subtle: #e2e8f0;
+  --color-bg-elevated: #ffffff;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #cbd5e1;
   --color-text-primary: #0f172a;
   --color-text-secondary: #475569;
   --color-text-muted: #64748b;
@@ -26,16 +26,6 @@
   --color-accent: #2563eb;
   --color-accent-hover: #1d4ed8;
 
-  --color-node-user: #7c3aed;
-  --color-node-role: #9333ea;
-  --color-node-ec2: #2563eb;
-  --color-node-s3: #d97706;
-  --color-node-rds: #ea580c;
-  --color-node-sg: #475569;
-  --color-node-vpc: #334155;
-  --color-node-lambda: #059669;
-  --color-node-policy: #db2777;
-
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
@@ -52,16 +42,17 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #ebf1f6;
+  background-color: #f1f5f9;
   background-image: 
-    radial-gradient(circle at 10% 0%, rgba(219, 234, 254, 0.6) 0%, transparent 45%),
-    radial-gradient(circle at 90% 10%, rgba(224, 231, 255, 0.5) 0%, transparent 40%),
+    radial-gradient(circle at 15% 0%, rgba(219, 234, 254, 0.5) 0%, transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(224, 231, 255, 0.4) 0%, transparent 35%),
     radial-gradient(circle at 50% 100%, rgba(241, 245, 249, 0.8) 0%, transparent 50%);
   background-attachment: fixed;
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  line-height: 1.4;
 }
 
 #root {
@@ -71,7 +62,25 @@ body {
   background: transparent;
 }
 
-/* Slim modern light scrollbars */
+/* Typography polish to prevent text overlap & clipping */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+span, p, label, button {
+  letter-spacing: normal;
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em !important;
+}
+
+.tracking-wide {
+  letter-spacing: 0.025em !important;
+}
+
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -87,91 +96,59 @@ body {
   background: #94a3b8;
 }
 
-/* Card styling utilities */
-.card-bright {
+/* Executive Card Styling */
+.card-executive {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 1.25rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03), 0 8px 24px -4px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s ease-in-out;
-}
-.card-bright:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 12px 30px -4px rgba(15, 23, 42, 0.06);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Animated gradient border */
-@keyframes borderGlow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+.card-executive:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 10px 24px -4px rgba(15, 23, 42, 0.06);
 }
 
-.glow-border {
-  position: relative;
-}
-.glow-border::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  border: 1.5px solid var(--color-risk);
-  opacity: 0.4;
-  animation: borderGlow 3s ease-in-out infinite;
-  pointer-events: none;
-}
-
-/* Pulse for critical items */
+/* Pulse animation for critical states */
 @keyframes pulse-risk {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
-  50% { box-shadow: 0 0 16px 4px rgba(239, 68, 68, 0.12); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.2); }
+  50% { box-shadow: 0 0 14px 2px rgba(220, 38, 38, 0.15); }
 }
+
 .pulse-critical {
   animation: pulse-risk 2.5s ease-in-out infinite;
 }
 
-/* Code diff styling */
-.diff-add { background: rgba(34, 197, 94, 0.12); color: #15803d; }
-.diff-remove { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+/* Code Diff styling */
+.diff-add { background: rgba(34, 197, 94, 0.1); color: #15803d; }
+.diff-remove { background: rgba(239, 68, 68, 0.1); color: #b91c1c; }
 
-/* Markdown-like rendering for chat */
-.chat-content p { margin-bottom: 0.5rem; }
-.chat-content strong { color: var(--color-text-primary); font-weight: 600; }
-.chat-content code {
-  background: #f1f5f9;
-  color: #0f172a;
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.375rem;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  border: 1px solid #e2e8f0;
+/* SVG Recharts text override fixes */
+.recharts-text {
+  font-family: var(--font-sans);
 }
-.chat-content pre {
-  background: #f8fafc;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  overflow-x: auto;
-  margin: 0.5rem 0;
-  font-size: 0.8125rem;
+
+.recharts-cartesian-axis-tick-value {
+  font-size: 11px;
+  fill: #64748b;
+  font-weight: 500;
 }
-.chat-content pre code {
-  background: none;
-  border: none;
-  padding: 0;
+
+/* Ensure recharts wrapper never overflows card borders */
+.recharts-wrapper {
+  overflow: visible;
 }
-.chat-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0.5rem 0;
-  font-size: 0.8125rem;
+
+/* Kanban and overflow-x containers need auto */
+.overflow-x-auto {
+  overflow-x: auto !important;
 }
-.chat-content th, .chat-content td {
-  border: 1px solid var(--color-border);
-  padding: 0.375rem 0.625rem;
-  text-align: left;
+
+/* Fix: prevent badge/pill text from sitting against its own border */
+[class*="rounded-full"][class*="border"],
+[class*="rounded-lg"][class*="border"] {
+  display: inline-flex;
+  align-items: center;
 }
-.chat-content th {
-  background: #f1f5f9;
-  font-weight: 600;
-  color: #0f172a;
-}
+
