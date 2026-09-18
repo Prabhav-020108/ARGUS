@@ -38,6 +38,7 @@
 
 html {
   color-scheme: light;
+  height: 100%;
 }
 
 body {
@@ -51,12 +52,17 @@ body {
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
   line-height: 1.4;
 }
 
 #root {
-  height: 100vh;
+  height: 100%;
+  width: 100%;
   display: flex;
   overflow: hidden;
   background: transparent;
@@ -130,9 +136,9 @@ span, p, label, button {
 }
 
 .recharts-cartesian-axis-tick-value {
-  font-size: 11px;
-  fill: #64748b;
-  font-weight: 500;
+  font-size: 12px;
+  fill: #475569;
+  font-weight: 600;
 }
 
 /* Ensure recharts wrapper never overflows card borders */

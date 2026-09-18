@@ -315,23 +315,23 @@ function RiskGauge({ value, size = 130, label, color }) {
 function MetricCard({ title, value, subtext, suffix, accentColor = '#2563eb', alertText }) {
   return (
     <div 
-      className="bg-white border-x border-b border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group"
+      className="bg-white border-x border-b border-slate-200/90 rounded-2xl p-6 md:p-7 shadow-[0_2px_8px_rgba(15,23,42,0.03)] hover:shadow-md transition-all flex flex-col justify-between group min-h-[145px]"
       style={{ borderTop: `4px solid ${accentColor}` }}
     >
       <div>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] uppercase font-extrabold text-slate-400 tracking-wider block leading-tight">{title}</span>
+          <span className="text-xs uppercase font-extrabold text-slate-500 tracking-wider block leading-tight">{title}</span>
         </div>
         <div className="flex items-baseline gap-2 my-1">
-          <span className="text-3xl font-extrabold text-slate-900 tabular-nums tracking-tight">
+          <span className="text-4xl font-extrabold text-slate-900 tabular-nums tracking-tight">
             {typeof value === 'number' ? <AnimatedNumber value={value} /> : value}
           </span>
-          {suffix && <span className="text-xs font-bold text-slate-400 font-mono">{suffix}</span>}
+          {suffix && <span className="text-sm font-bold text-slate-400 font-mono">{suffix}</span>}
         </div>
-        {subtext && <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">{subtext}</p>}
+        {subtext && <p className="text-xs md:text-sm text-slate-600 font-medium mt-1.5 leading-relaxed">{subtext}</p>}
         {alertText && (
-          <div className="text-[11px] font-bold text-amber-700 mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
-            <AlertTriangle size={13} className="text-amber-600 flex-shrink-0" /> {alertText}
+          <div className="text-xs font-bold text-amber-700 mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
+            <AlertTriangle size={14} className="text-amber-600 flex-shrink-0" /> {alertText}
           </div>
         )}
       </div>
@@ -363,7 +363,7 @@ function Sidebar({ active, onNav, collapsed, onToggle }) {
           {!collapsed && (
             <div>
               <span className="text-base font-extrabold tracking-tight text-slate-900 leading-none block">ARGUS</span>
-              <span className="text-[10px] text-slate-500 font-bold tracking-wider">CLOUD SECURITY</span>
+              <span className="text-xs text-slate-500 font-bold tracking-wider">CLOUD SECURITY</span>
             </div>
           )}
         </button>
@@ -382,9 +382,9 @@ function Sidebar({ active, onNav, collapsed, onToggle }) {
               }`}
               title={collapsed ? item.label : undefined}
             >
-              <item.icon size={18} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
-              {!collapsed && <span>{item.label}</span>}
-              {!collapsed && isActive && <ChevronRight size={14} className="ml-auto text-blue-500" />}
+              <item.icon size={20} className={isActive ? 'text-blue-600' : 'text-slate-400'} />
+              {!collapsed && <span className="text-sm font-semibold">{item.label}</span>}
+              {!collapsed && isActive && <ChevronRight size={15} className="ml-auto text-blue-500" />}
             </button>
           );
         })}
@@ -394,12 +394,12 @@ function Sidebar({ active, onNav, collapsed, onToggle }) {
       {!collapsed && (
         <div className="px-3 pb-5">
           <div className="bg-slate-50 rounded-xl p-3.5 border border-slate-200/80">
-            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400 font-bold mb-1">
-              <Cloud size={12} className="text-slate-500" /> Target AWS
+            <div className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">
+              <Cloud size={14} className="text-slate-500" /> Target AWS
             </div>
-            <div className="text-xs text-slate-800 font-mono font-bold">us-east-1 · Production</div>
-            <div className="flex items-center justify-between mt-1 text-[11px] text-slate-500">
-              <span className="font-mono text-[10px]">argus-demo</span>
+            <div className="text-xs md:text-sm text-slate-800 font-mono font-bold">us-east-1 · Production</div>
+            <div className="flex items-center justify-between mt-1.5 text-xs text-slate-500">
+              <span className="font-mono text-xs text-slate-500">argus-demo</span>
               <span className="text-emerald-700 font-bold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
               </span>
@@ -528,52 +528,52 @@ function OverviewPage() {
   const sevColors = { critical: '#dc2626', high: '#ea580c', medium: '#d97706', low: '#059669' };
 
   return (
-    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full">
+    <div className="p-5 md:p-7 lg:p-8 overflow-y-auto h-full space-y-7 pb-20 w-full">
       {/* 1. Top Posture Banner (Spacious Executive Bar) */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] flex items-center justify-between gap-6 flex-wrap">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 items-center flex-1 min-w-[320px]">
           <div>
-            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">SESSION</span>
-            <span className="font-extrabold text-slate-900 text-sm flex items-center gap-2 leading-snug">
-              <Activity size={15} className="text-blue-600 flex-shrink-0" /> Posture Audit
+            <span className="text-xs uppercase font-extrabold text-slate-500 block tracking-wider mb-1.5 leading-none">SESSION</span>
+            <span className="font-extrabold text-slate-900 text-sm md:text-base flex items-center gap-2 leading-snug">
+              <Activity size={17} className="text-blue-600 flex-shrink-0" /> Posture Audit
             </span>
           </div>
 
           <div>
-            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">AUDIT STATUS</span>
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold leading-none ${
+            <span className="text-xs uppercase font-extrabold text-slate-500 block tracking-wider mb-1.5 leading-none">AUDIT STATUS</span>
+            <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold leading-none ${
               scenario.riskScore > 70 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
             }`}>
-              <span className={`w-2 h-2 rounded-full ${scenario.riskScore > 70 ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse`} />
+              <span className={`w-2.5 h-2.5 rounded-full ${scenario.riskScore > 70 ? 'bg-rose-500' : 'bg-amber-500'} animate-pulse`} />
               {scenario.riskScore > 70 ? 'OVERLOADED RISK' : 'ELEVATED RISK'}
             </span>
           </div>
 
           <div>
-            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">TARGET DEVICE</span>
-            <span className="font-semibold text-slate-700 text-xs flex items-center gap-2 leading-snug">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" /> AWS us-east-1
+            <span className="text-xs uppercase font-extrabold text-slate-500 block tracking-wider mb-1.5 leading-none">TARGET DEVICE</span>
+            <span className="font-bold text-slate-800 text-xs md:text-sm flex items-center gap-2 leading-snug">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" /> AWS us-east-1
             </span>
           </div>
 
           <div className="hidden lg:block">
-            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">OPTIMAL SOLVER</span>
-            <span className="font-bold text-blue-600 text-xs leading-snug">Stackelberg LP + GNN</span>
+            <span className="text-xs uppercase font-extrabold text-slate-500 block tracking-wider mb-1.5 leading-none">OPTIMAL SOLVER</span>
+            <span className="font-bold text-blue-600 text-xs md:text-sm leading-snug">Stackelberg LP + GNN</span>
           </div>
 
           <div className="hidden lg:block">
-            <span className="text-[11px] uppercase font-extrabold text-slate-400 block tracking-wider mb-1.5 leading-none">COMPLIANCE ENGINE</span>
-            <span className="font-bold text-emerald-700 text-xs flex items-center gap-1.5 leading-snug">
-              <CheckCircle2 size={14} className="flex-shrink-0" /> DPDP 2025 Active
+            <span className="text-xs uppercase font-extrabold text-slate-500 block tracking-wider mb-1.5 leading-none">COMPLIANCE ENGINE</span>
+            <span className="font-bold text-emerald-700 text-xs md:text-sm flex items-center gap-1.5 leading-snug">
+              <CheckCircle2 size={16} className="flex-shrink-0" /> DPDP 2025 Active
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <button className="px-4 py-2.5 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors shadow-2xs">
+        <div className="flex items-center gap-3.5 flex-shrink-0">
+          <button className="px-5 py-2.5 text-xs md:text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl transition-colors shadow-2xs">
             Run Scan Cycle
           </button>
-          <div className="text-base font-extrabold font-mono text-blue-600 bg-blue-50 border border-blue-200 px-3.5 py-2 rounded-xl tabular-nums">
+          <div className="text-base md:text-lg font-extrabold font-mono text-blue-600 bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl tabular-nums">
             00:15
           </div>
         </div>
@@ -582,24 +582,24 @@ function OverviewPage() {
       {/* 2. Target Scenario Hero Strip */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-blue-600" />
-            <h2 className="font-extrabold text-slate-900 text-base">{scenario.name}</h2>
+          <div className="flex items-center gap-3">
+            <span className="w-3.5 h-3.5 rounded-full bg-blue-600" />
+            <h2 className="font-extrabold text-slate-900 text-base md:text-lg">{scenario.name}</h2>
           </div>
-          <div className="flex items-center gap-2.5 flex-wrap text-xs">
-            <span className="font-bold bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-lg">
+          <div className="flex items-center gap-2.5 flex-wrap text-xs md:text-sm">
+            <span className="font-bold bg-amber-50 text-amber-800 border border-amber-200 px-3.5 py-1.5 rounded-lg">
               PRIORITY FIX #1: R-001
             </span>
-            <span className="font-bold bg-blue-50 text-blue-800 border border-blue-200 px-3 py-1 rounded-lg">
+            <span className="font-bold bg-blue-50 text-blue-800 border border-blue-200 px-3.5 py-1.5 rounded-lg">
               ATTACK HOPS: 7
             </span>
-            <span className="font-bold bg-rose-50 text-rose-800 border border-rose-200 px-3 py-1 rounded-lg">
+            <span className="font-bold bg-rose-50 text-rose-800 border border-rose-200 px-3.5 py-1.5 rounded-lg">
               DPDP PENALTY: ₹250 CR
             </span>
           </div>
         </div>
         <button onClick={() => setActiveScenario(activeScenario === 'iam_escalation' ? 'dpdp_violation' : 'iam_escalation')}
-          className="text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs">
+          className="text-xs md:text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-100 transition-colors shadow-2xs">
           Change Scenario
         </button>
       </div>
@@ -650,23 +650,23 @@ function OverviewPage() {
         <div className="col-span-12 lg:col-span-7 bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900">Stackelberg vs Naive Prioritization</h3>
-              <p className="text-xs text-slate-500 mt-0.5 font-medium">Comparison of Game-Theoretic Priority Rank vs Traditional Severity Rank (Lower # = Higher Urgency)</p>
+              <h3 className="text-base md:text-lg font-extrabold text-slate-900">Stackelberg vs Naive Prioritization</h3>
+              <p className="text-xs md:text-sm text-slate-500 mt-0.5 font-medium">Comparison of Game-Theoretic Priority Rank vs Traditional Severity Rank (Lower # = Higher Urgency)</p>
             </div>
-            <div className="flex items-center gap-4 text-xs font-bold">
-              <div className="flex items-center gap-1.5 text-blue-700"><div className="w-3 h-3 rounded-md bg-blue-600" /> Stackelberg LP</div>
-              <div className="flex items-center gap-1.5 text-slate-500"><div className="w-3 h-3 rounded-md bg-slate-300" /> Naive Rank</div>
+            <div className="flex items-center gap-4 text-xs md:text-sm font-bold">
+              <div className="flex items-center gap-1.5 text-blue-700"><div className="w-3.5 h-3.5 rounded-md bg-blue-600" /> Stackelberg LP</div>
+              <div className="flex items-center gap-1.5 text-slate-500"><div className="w-3.5 h-3.5 rounded-md bg-slate-300" /> Naive Rank</div>
             </div>
           </div>
 
           <div className="w-full mb-4">
-            <ResponsiveContainer width="100%" height={230}>
+            <ResponsiveContainer width="100%" height={320}>
               <BarChart data={chartData} margin={{ top: 15, right: 20, bottom: 20, left: 15 }}>
-                <XAxis dataKey="id" tick={{ fill: '#475569', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-mono)' }} dy={4} />
-                <YAxis tick={{ fill: '#475569', fontSize: 11 }} domain={[0, 8]} tickFormatter={v => `Rank #${v}`} dx={-6} width={58} />
+                <XAxis dataKey="id" tick={{ fill: '#475569', fontSize: 12, fontWeight: 600, fontFamily: 'var(--font-mono)' }} dy={4} />
+                <YAxis tick={{ fill: '#475569', fontSize: 12 }} domain={[0, 8]} tickFormatter={v => `Rank #${v}`} dx={-6} width={62} />
                 <RTooltip content={<CustomTooltip />} />
-                <Bar dataKey="stackelberg" name="Stackelberg Rank" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={28} />
-                <Bar dataKey="naive" name="Naive Rank" fill="#cbd5e1" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="stackelberg" name="Stackelberg Rank" fill="#2563eb" radius={[6, 6, 0, 0]} maxBarSize={32} />
+                <Bar dataKey="naive" name="Naive Rank" fill="#cbd5e1" radius={[6, 6, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -674,17 +674,17 @@ function OverviewPage() {
           {/* Neural Resource Risk Activation */}
           <div className="border-t border-slate-200 pt-6 mt-6 space-y-5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">NEURAL RESOURCE RISK ACTIVATION</span>
-              <span className="text-xs text-slate-500 font-semibold">Normalized Impact Score</span>
+              <span className="text-xs md:text-sm font-extrabold text-slate-500 uppercase tracking-wider">NEURAL RESOURCE RISK ACTIVATION</span>
+              <span className="text-xs md:text-sm text-slate-500 font-semibold">Normalized Impact Score</span>
             </div>
             <div className="space-y-4">
-              {chartData.slice(0, 4).map(f => (
+              {chartData.slice(0, 5).map(f => (
                 <div key={f.id} className="space-y-2 pb-1">
-                  <div className="flex items-center justify-between text-xs font-semibold gap-4 mb-1">
-                    <span className="font-mono text-slate-800 truncate">{f.id} — {f.name}</span>
+                  <div className="flex items-center justify-between text-xs md:text-sm font-semibold gap-4 mb-1">
+                    <span className="font-mono text-slate-800 font-bold truncate">{f.id} — {f.name}</span>
                     <span className="font-bold tabular-nums font-mono flex-shrink-0" style={{ color: sevColors[f.severity] }}>{f.risk} / 100</span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden p-0.5 border border-slate-200/60">
+                  <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden p-0.5 border border-slate-200/60">
                     <motion.div className="h-full rounded-full" style={{ backgroundColor: sevColors[f.severity] }}
                       initial={{ width: 0 }} animate={{ width: `${f.risk}%` }} transition={{ duration: 1, delay: 0.2 }} />
                   </div>
@@ -700,16 +700,16 @@ function OverviewPage() {
           <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-4">
             <div className="flex items-center justify-between mb-1">
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">Posture Score Trend</h3>
-                <span className="text-xs text-slate-500 font-medium">15-minute telemetry window</span>
+                <h3 className="text-base md:text-lg font-extrabold text-slate-900">Posture Score Trend</h3>
+                <span className="text-xs md:text-sm text-slate-500 font-medium">15-minute telemetry window</span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
                 Live · 30s
               </span>
             </div>
             
             <div className="w-full">
-              <ResponsiveContainer width="100%" height={190}>
+              <ResponsiveContainer width="100%" height={250}>
                 <AreaChart data={trendData} margin={{ top: 10, right: 10, bottom: 15, left: 0 }}>
                   <defs>
                     <linearGradient id="riskGrad" x1="0" y1="0" x2="0" y2="1">
@@ -721,8 +721,8 @@ function OverviewPage() {
                       <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="t" tick={{ fill: '#64748b', fontSize: 11 }} dy={2} />
-                  <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 11 }} dx={-4} width={28} />
+                  <XAxis dataKey="t" tick={{ fill: '#64748b', fontSize: 12 }} dy={2} />
+                  <YAxis domain={[0, 100]} tick={{ fill: '#64748b', fontSize: 12 }} dx={-4} width={30} />
                   <RTooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="risk" name="Risk Score" stroke="#dc2626" strokeWidth={2.5} fill="url(#riskGrad)" />
                   <Area type="monotone" dataKey="dpdp" name="DPDP Score" stroke="#2563eb" strokeWidth={2.5} fill="url(#dpdpGrad)" />
@@ -730,48 +730,48 @@ function OverviewPage() {
               </ResponsiveContainer>
             </div>
             
-            <div className="flex items-center justify-center gap-6 pt-4 text-xs font-bold border-t border-slate-200 mt-4">
-              <div className="flex items-center gap-1.5 text-rose-600"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Attack Risk Score</div>
-              <div className="flex items-center gap-1.5 text-blue-600"><span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> DPDP Compliance</div>
+            <div className="flex items-center justify-center gap-6 pt-4 text-xs md:text-sm font-bold border-t border-slate-200 mt-4">
+              <div className="flex items-center gap-2 text-rose-600"><span className="w-3 h-3 rounded-full bg-rose-500" /> Attack Risk Score</div>
+              <div className="flex items-center gap-2 text-blue-600"><span className="w-3 h-3 rounded-full bg-blue-500" /> DPDP Compliance</div>
             </div>
           </div>
 
           {/* Remediation Pipeline Status Grid */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-4">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-extrabold text-slate-900">Remediation Pipeline</h3>
-              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">{remediations.length} Active Actions</span>
+              <h3 className="text-base md:text-lg font-extrabold text-slate-900">Remediation Pipeline</h3>
+              <span className="text-xs md:text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">{remediations.length} Active Actions</span>
             </div>
-            <div className="grid grid-cols-4 gap-3">
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5 text-center">
-                <div className="text-2xl font-extrabold text-slate-800">{pipeline.drafted}</div>
-                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide mt-0.5">Drafted</div>
+            <div className="grid grid-cols-4 gap-3.5">
+              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-center">
+                <div className="text-2xl md:text-3xl font-extrabold text-slate-800">{pipeline.drafted}</div>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Drafted</div>
               </div>
-              <div className="bg-blue-50 border border-blue-200/80 rounded-xl p-3.5 text-center">
-                <div className="text-2xl font-extrabold text-blue-700">{pipeline.verified}</div>
-                <div className="text-[11px] font-bold text-blue-700 uppercase tracking-wide mt-0.5">Verified</div>
+              <div className="bg-blue-50 border border-blue-200/80 rounded-xl p-4 text-center">
+                <div className="text-2xl md:text-3xl font-extrabold text-blue-700">{pipeline.verified}</div>
+                <div className="text-xs font-bold text-blue-700 uppercase tracking-wide mt-1">Verified</div>
               </div>
-              <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3.5 text-center">
-                <div className="text-2xl font-extrabold text-amber-700">{pipeline.approved}</div>
-                <div className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mt-0.5">Approved</div>
+              <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-4 text-center">
+                <div className="text-2xl md:text-3xl font-extrabold text-amber-700">{pipeline.approved}</div>
+                <div className="text-xs font-bold text-amber-700 uppercase tracking-wide mt-1">Approved</div>
               </div>
-              <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-3.5 text-center">
-                <div className="text-2xl font-extrabold text-emerald-700">{pipeline.applied}</div>
-                <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mt-0.5">Applied</div>
+              <div className="bg-emerald-50 border border-emerald-200/80 rounded-xl p-4 text-center">
+                <div className="text-2xl md:text-3xl font-extrabold text-emerald-700">{pipeline.applied}</div>
+                <div className="text-xs font-bold text-emerald-700 uppercase tracking-wide mt-1">Applied</div>
               </div>
             </div>
           </div>
 
           {/* Recent Security Activity Stream */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-[0_2px_8px_rgba(15,23,42,0.03)] space-y-4">
-            <h3 className="text-sm font-extrabold text-slate-900 mb-1">Recent Security Activity</h3>
+            <h3 className="text-base md:text-lg font-extrabold text-slate-900 mb-1">Recent Security Activity</h3>
             <div className="space-y-3">
               {activity.map((a, i) => (
-                <div key={i} className="flex items-start gap-3.5 text-xs p-3.5 bg-slate-50/60 border border-slate-200/80 rounded-xl hover:bg-slate-50 transition-colors">
-                  <a.icon size={16} className={`${a.color} mt-0.5 flex-shrink-0`} />
+                <div key={i} className="flex items-start gap-3.5 p-4 bg-slate-50/60 border border-slate-200/80 rounded-xl hover:bg-slate-50 transition-colors">
+                  <a.icon size={18} className={`${a.color} mt-0.5 flex-shrink-0`} />
                   <div className="min-w-0 flex-1 space-y-1">
-                    <p className="text-slate-800 font-semibold leading-relaxed">{a.text}</p>
-                    <span className="text-[11px] text-slate-400 font-medium font-mono block">{a.time}</span>
+                    <p className="text-xs md:text-sm text-slate-800 font-semibold leading-relaxed">{a.text}</p>
+                    <span className="text-xs text-slate-400 font-medium font-mono block">{a.time}</span>
                   </div>
                 </div>
               ))}
@@ -836,7 +836,7 @@ function FindingsPage() {
   }, [findings]);
 
   return (
-    <div className="h-full flex flex-col max-w-[1600px] mx-auto w-full p-6 md:p-8 space-y-6 overflow-hidden">
+    <div className="h-full flex flex-col w-full p-4 md:p-6 lg:p-8 space-y-5 overflow-hidden">
       {/* Search & Filter Header */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center gap-4 flex-wrap justify-between flex-shrink-0">
         <div className="flex items-center gap-3 flex-wrap">
@@ -871,7 +871,7 @@ function FindingsPage() {
         {/* Table list */}
         <div className="flex-1 overflow-y-auto pr-1 space-y-3">
           {/* Table column headers */}
-          <div className="grid grid-cols-12 gap-3 px-5 py-2 text-[11px] uppercase tracking-wider text-slate-400 font-extrabold">
+          <div className="grid grid-cols-12 gap-3 px-5 py-2 text-xs uppercase tracking-wider text-slate-500 font-extrabold">
             {[{k:'stackRank',l:'Stack #',c:'col-span-1'},{k:'title',l:'Finding Title',c:'col-span-4'},{k:'severity',l:'Severity',c:'col-span-2'},{k:'resource',l:'Resource Asset',c:'col-span-2'},{k:'risk',l:'Risk Score',c:'col-span-2'},{k:'status',l:'Status',c:'col-span-1'}].map(col => (
               <button key={col.k} onClick={() => toggleSort(col.k)}
                 className={`${col.c} flex items-center gap-1 hover:text-slate-700 transition-colors text-left`}>
@@ -890,19 +890,19 @@ function FindingsPage() {
               }`}>
               {/* Stackelberg Rank */}
               <div className="col-span-1">
-                <span className="text-base font-extrabold text-blue-600 font-mono">#{f.stackRank}</span>
+                <span className="text-lg font-extrabold text-blue-600 font-mono">#{f.stackRank}</span>
                 {f.stackRank !== f.naiveRank && (
-                  <span className={`block text-[10px] font-bold ${f.stackRank < f.naiveRank ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  <span className={`block text-xs font-bold ${f.stackRank < f.naiveRank ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {f.stackRank < f.naiveRank ? `↑${f.naiveRank - f.stackRank} rank` : `↓${f.stackRank - f.naiveRank} rank`}
                   </span>
                 )}
               </div>
               {/* Title */}
               <div className="col-span-4">
-                <p className="text-sm font-bold text-slate-900 leading-snug">{f.title}</p>
+                <p className="text-sm md:text-base font-bold text-slate-900 leading-snug">{f.title}</p>
                 {f.dpdp.length > 0 && (
-                  <div className="flex gap-1.5 mt-1">
-                    {f.dpdp.map(d => <span key={d} className="text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono font-bold">{d}</span>)}
+                  <div className="flex gap-1.5 mt-1.5">
+                    {f.dpdp.map(d => <span key={d} className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded font-mono font-bold">{d}</span>)}
                   </div>
                 )}
               </div>
@@ -912,24 +912,24 @@ function FindingsPage() {
               </div>
               {/* Resource */}
               <div className="col-span-2">
-                <span className="text-xs font-mono font-bold text-slate-700 block truncate">{f.resource}</span>
-                <span className="text-[11px] text-slate-400 font-medium">{f.type}</span>
+                <span className="text-xs md:text-sm font-mono font-bold text-slate-700 block truncate">{f.resource}</span>
+                <span className="text-xs text-slate-500 font-medium">{f.type}</span>
               </div>
               {/* Risk bar */}
               <div className="col-span-2">
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
                     <div className="h-full rounded-full" style={{
                       width: `${f.risk}%`,
                       backgroundColor: f.severity === 'critical' ? '#dc2626' : f.severity === 'high' ? '#ea580c' : '#f59e0b'
                     }} />
                   </div>
-                  <span className="text-xs font-bold font-mono text-slate-800">{f.risk}</span>
+                  <span className="text-sm font-bold font-mono text-slate-800">{f.risk}</span>
                 </div>
               </div>
               {/* Status */}
               <div className="col-span-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                   {f.status}
                 </span>
               </div>
@@ -1042,7 +1042,7 @@ function AttackGraphPage() {
   const selectedNode = nodes.find(n => n.id === selected);
 
   return (
-    <div className="h-full flex flex-col max-w-[1600px] mx-auto w-full p-6 md:p-8 space-y-4 overflow-hidden">
+    <div className="h-full flex flex-col w-full p-4 md:p-6 lg:p-8 space-y-4 overflow-hidden">
       {/* Toolbar */}
       <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-3.5 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-3 flex-shrink-0">
         <div className="flex items-center gap-3">
@@ -1201,7 +1201,7 @@ function DPDPCompliancePage() {
   const displayScore = showPost ? compliance.postScore : compliance.score;
 
   return (
-    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1600px] mx-auto w-full pr-8">
+    <div className="p-4 md:p-6 lg:p-8 overflow-y-auto h-full space-y-6 pb-24 w-full">
       {/* Header */}
       <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -1249,15 +1249,15 @@ function DPDPCompliancePage() {
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <span className="text-xs font-mono font-bold text-blue-600">{rule.ref}</span>
-                    <h4 className="text-sm font-bold text-slate-900 mt-0.5">{rule.title}</h4>
+                    <h4 className="text-base font-bold text-slate-900 mt-0.5">{rule.title}</h4>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase flex-shrink-0 ${statusStyle[status.s]}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase flex-shrink-0 ${statusStyle[status.s]}`}>
                     {status.s}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 font-medium leading-snug">{rule.meaning}</p>
-                <div className="flex items-center justify-between mt-3 text-[11px] font-semibold text-slate-400">
-                  <span>Penalty: <strong className="text-slate-700">{rule.penalty}</strong></span>
+                <p className="text-sm text-slate-600 font-medium leading-normal">{rule.meaning}</p>
+                <div className="flex items-center justify-between mt-3 text-xs font-semibold text-slate-500">
+                  <span>Penalty: <strong className="text-slate-800 font-bold">{rule.penalty}</strong></span>
                   <span>{status.fail.length} of {status.total} failed</span>
                 </div>
                 {isExpanded && status.fail.length > 0 && (
@@ -1300,7 +1300,7 @@ function RemediationPage() {
   }, [remediations]);
 
   return (
-    <div className="h-full flex flex-col max-w-[1600px] mx-auto w-full p-6 md:p-8 space-y-6 overflow-hidden">
+    <div className="h-full flex flex-col w-full p-4 md:p-6 lg:p-8 space-y-5 overflow-hidden">
       {/* Controls */}
       <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between flex-wrap gap-4 flex-shrink-0">
         <div>
@@ -1336,21 +1336,21 @@ function RemediationPage() {
                     className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-all cursor-pointer space-y-2">
                     <div className="flex items-center justify-between">
                       <SeverityBadge severity={r.sev} />
-                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                      <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded">
                         conf: {(r.conf * 100).toFixed(0)}%
                       </span>
                     </div>
-                    <h4 className="text-xs font-bold text-slate-900">{r.title}</h4>
-                    <p className="text-[11px] font-mono text-slate-500 truncate">{r.resource}</p>
+                    <h4 className="text-sm font-bold text-slate-900">{r.title}</h4>
+                    <p className="text-xs font-mono text-slate-500 truncate">{r.resource}</p>
                     <div className="flex items-center gap-2 text-xs font-bold">
                       <span className="text-rose-600">{r.rBefore}</span>
                       <ArrowRight size={12} className="text-slate-400" />
                       <span className="text-emerald-600">{r.rAfter}</span>
-                      <span className="text-[10px] font-normal text-slate-400">risk delta</span>
+                      <span className="text-xs font-normal text-slate-400">risk delta</span>
                     </div>
                     {/* Expandable diff */}
                     {selectedRem === r.id && (
-                      <div className="mt-3 pt-3 border-t border-slate-100 space-y-2 text-[10px] font-mono">
+                      <div className="mt-3 pt-3 border-t border-slate-100 space-y-2 text-xs font-mono">
                         <div className="bg-rose-50 border border-rose-200 rounded-lg p-2.5 text-rose-800 whitespace-pre-wrap">
                           <strong className="block text-rose-900 mb-1">ORIGINAL CONFIG</strong>
                           {r.before}
@@ -1359,7 +1359,7 @@ function RemediationPage() {
                           <strong className="block text-emerald-900 mb-1">REMEDIATED PATCH</strong>
                           {r.after}
                         </div>
-                        <p className="text-xs font-sans text-slate-600">{r.explanation}</p>
+                        <p className="text-xs md:text-sm font-sans text-slate-600">{r.explanation}</p>
                       </div>
                     )}
                   </motion.div>
@@ -1386,7 +1386,7 @@ function SettingsPage() {
   });
 
   return (
-    <div className="p-6 md:p-8 overflow-y-auto h-full space-y-6 pb-28 max-w-[1200px] mx-auto w-full">
+    <div className="p-4 md:p-6 lg:p-8 overflow-y-auto h-full space-y-6 pb-24 w-full">
       <div className="bg-white border border-slate-200/90 rounded-2xl px-6 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] flex items-center justify-between">
         <div>
           <h2 className="text-lg font-extrabold text-slate-900">System Configuration</h2>
@@ -1476,21 +1476,24 @@ function ChatPanel({ isOpen, onClose }) {
 
   return (
     <motion.div initial={{ x: 400, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 400, opacity: 0 }}
-      className="w-96 border-l border-slate-200 bg-white flex flex-col h-full shadow-2xl z-40">
-      <div className="h-16 border-b border-slate-200 flex items-center justify-between px-5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-            <Bot size={16} />
+      className="w-96 md:w-[420px] border-l border-slate-200 bg-white flex flex-col h-full shadow-2xl z-40">
+      <div className="h-16 border-b border-slate-200 flex items-center justify-between px-5 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+            <Bot size={18} />
           </div>
-          <span className="text-sm font-bold text-slate-900">Ask ARGUS</span>
+          <div>
+            <span className="text-base font-extrabold text-slate-900 block leading-tight">Ask ARGUS</span>
+            <span className="text-xs text-slate-400 font-medium">Security Copilot</span>
+          </div>
         </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1"><X size={18} /></button>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"><X size={20} /></button>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+      <div className="flex-1 overflow-y-auto p-5 space-y-4 text-sm">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`p-3 rounded-2xl max-w-[85%] leading-relaxed ${
-              m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-100 text-slate-800 rounded-bl-none font-medium'
+            <div className={`p-4 rounded-2xl max-w-[88%] text-sm leading-relaxed ${
+              m.role === 'user' ? 'bg-blue-600 text-white rounded-br-none shadow-sm' : 'bg-slate-100/80 border border-slate-200/60 text-slate-800 rounded-bl-none font-medium'
             }`}>
               {m.text}
             </div>
@@ -1498,20 +1501,20 @@ function ChatPanel({ isOpen, onClose }) {
         ))}
         <div ref={bottomRef} />
       </div>
-      <div className="p-3 border-t border-slate-200 space-y-2">
-        <div className="flex flex-wrap gap-1">
+      <div className="p-4 border-t border-slate-200 space-y-3 bg-white flex-shrink-0">
+        <div className="flex flex-wrap gap-2">
           {CHAT_SUGGESTIONS.slice(0, 2).map(s => (
-            <button key={s} onClick={() => send(s)} className="text-[10px] bg-slate-50 hover:bg-slate-100 border border-slate-200 px-2 py-1 rounded-lg text-slate-600">
+            <button key={s} onClick={() => send(s)} className="text-xs font-semibold bg-slate-50 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 px-3 py-1.5 rounded-xl text-slate-600 transition-colors text-left leading-normal">
               {s}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+        <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus-within:bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
           <input type="text" value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && send()}
             placeholder="Ask security question..."
-            className="flex-1 bg-transparent text-xs text-slate-800 outline-none" />
-          <button onClick={() => send()} className="text-blue-600 hover:text-blue-800 font-bold"><Send size={15} /></button>
+            className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 outline-none font-medium" />
+          <button onClick={() => send()} className="text-blue-600 hover:text-blue-700 p-1 font-bold transition-transform hover:scale-110"><Send size={18} /></button>
         </div>
       </div>
     </motion.div>
@@ -1546,16 +1549,16 @@ function AppShell() {
   const PageComponent = pages[activePage] || OverviewPage;
 
   return (
-    <div className="flex h-full w-full bg-[#ebf1f6] overflow-hidden">
+    <div className="flex h-screen w-full bg-[#f1f5f9] overflow-hidden">
       <Sidebar active={activePage} onNav={setActivePage} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <TopBar scenarioId={activeScenario} onScenarioChange={setActiveScenario} />
         <div className="flex-1 flex min-h-0 overflow-hidden">
-          <main className="flex-1 min-w-0 overflow-y-auto">
+          <main className="flex-1 min-w-0 h-full overflow-y-auto">
             <AnimatePresence mode="wait">
               <motion.div key={activePage + activeScenario}
                 initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.15 }} className="h-full">
+                transition={{ duration: 0.15 }} className="h-full w-full">
                 <PageComponent />
               </motion.div>
             </AnimatePresence>
