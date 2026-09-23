@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "required": ["finding_id", "resource_ref", "ops", "rationale_ref"],
+  "properties": {
+    "finding_id": { "type": "string" },
+    "resource_ref": { "type": "string", "pattern": "^[A-Z_]+_[0-9]+$" },
+    "ops": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["op"],
+        "properties": {
+          "op": {
+            "enum": [
+              "set_attr",
+              "add_policy_statement",
+              "remove_policy_statement",
+              "restrict_cidr",
+              "enable_feature",
+              "set_lifecycle_rule",
+              "escalate"
+            ]
+          },
+          "attr": { "type": "string" },
+          "value": {},
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "rationale_ref": { "type": "string" }
+  }
+}

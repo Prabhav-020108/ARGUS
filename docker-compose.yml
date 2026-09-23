@@ -1,0 +1,17 @@
+services:
+  neo4j:
+    image: neo4j:5-community
+    container_name: argus-neo4j
+    ports:
+      - "7474:7474"   # Neo4j Browser — open this in your web browser
+      - "7687:7687"   # Bolt — used by Python/driver connections
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-changeme}
+    volumes:
+      - neo4j_data:/data
+
+  # backend:   # FastAPI service — added here in Phase 7 once backend/ has real code
+  # dashboard: # React dev server — added here in Phase 8 once dashboard/ has real code
+
+volumes:
+  neo4j_data:

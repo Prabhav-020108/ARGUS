@@ -1,0 +1,9 @@
+# Decisions & Rationale Log
+
+One entry per non-obvious choice. Future-you (and the paper's Related
+Work / Methodology sections) will thank present-you for this.
+
+## YYYY-MM-DD — Example entry
+**Decision:** ...
+**Why:** ...
+**Alternatives considered:** ...
