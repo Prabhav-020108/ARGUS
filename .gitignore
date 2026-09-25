@@ -32,3 +32,8 @@ ml/train_m1/adapters/
 .DS_Store
 Thumbs.db
 .vscode/settings.json
+
+# Installers and temporary files
+*.zip
+aws/
+To
