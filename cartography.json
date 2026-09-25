@@ -1,0 +1,3 @@
+{
+  "aws-requested-syncs": "iam,ec2,kms,s3,rds"
+}
