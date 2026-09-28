@@ -36,4 +36,13 @@ Thumbs.db
 # Installers and temporary files
 *.zip
 aws/
-To
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# Secrets / key files
+*.csv
+*accessKeys*

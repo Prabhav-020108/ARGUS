@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+# Install system CA certificates so botocore can verify AWS SSL certs
+# (needed on Docker Desktop for Windows where the host CA bundle isn't inherited)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir cartography && \
+    pip install --no-cache-dir --upgrade certifi
+
+# Tell botocore/requests to use the system CA bundle
+ENV AWS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
+ENTRYPOINT ["cartography"]
