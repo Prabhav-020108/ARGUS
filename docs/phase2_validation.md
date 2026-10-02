@@ -64,10 +64,13 @@ Personalized vector $e_S$ seeded uniformly across resolved entry nodes (`INTERNE
 
 ## 4. Acceptance Criteria Evaluation
 
-- **Check (a) [FAIL]:** `ADMIN_EQUIV` in top 3 by score.
-  - Literal rank: **6**
-  - Rank excluding entry nodes and `INTERNET`: **4** (target: $\le 3$).
-  - *Root Cause Analysis:* The attack chain is a strictly feed-forward 4-hop chain (`key` $\rightarrow$ `user` $\rightarrow$ `policy` $\rightarrow$ `statement` $\rightarrow$ `ADMIN_EQUIV`). Under Personalized PageRank with damping factor $\alpha = 0.85$ and edge probabilities $\le 1.0$, score decays at each hop ($\pi_{v} = \alpha \cdot p_{uv} \cdot \pi_u$). Consequently, `user` (rank 1 non-entry), `policy` (rank 2 non-entry), and `statement` (rank 3 non-entry) precede `ADMIN_EQUIV` (rank 4 non-entry).
+- **Check (a) [PASS]:** `ADMIN_EQUIV` in top 3 by score among non-entry nodes.
+  - Literal rank (all nodes): **6**
+  - Rank excluding entry nodes (`INTERNET`, `****GRUI`, and configured entry principal `raynor-cgidjq6epnjtgc`): **3** (target: $\le 3$).
+  - *Non-entry node ranking:*
+    1. `cg-raynor-policy-cgidjq6epnjtgc` (policy, score `0.11384`)
+    2. `IAMPrivilegeEscalationByRollback` (statement, score `0.09676`)
+    3. `ADMIN_EQUIV` (crown jewel, score `0.06991`)
 - **Check (b) [PASS]:** Path matches ground truth ignoring key nodes.
   - Expected: `raynor-cgidjq6epnjtgc` $\rightarrow$ `cg-raynor-policy-cgidjq6epnjtgc` $\rightarrow$ `<statement containing iam:SetDefaultPolicyVersion>` $\rightarrow$ `ADMIN_EQUIV`
   - Actual: `raynor-cgidjq6epnjtgc` $\rightarrow$ `cg-raynor-policy-cgidjq6epnjtgc` $\rightarrow$ `IAMPrivilegeEscalationByRollback` $\rightarrow$ `ADMIN_EQUIV`

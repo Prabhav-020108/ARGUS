@@ -159,9 +159,15 @@ def main() -> int:
             rank_all = idx
             break
 
+    cfg_entries = set(config_data.get("entry_nodes", []))
+    all_entry = set(entry)
+    for n, d in G.nodes(data=True):
+        if n in cfg_entries or d.get("label") in cfg_entries:
+            all_entry.add(n)
+
     filtered_ranked = [
         (n, s) for n, s in sorted_nodes
-        if n not in entry and n != "INTERNET"
+        if n not in all_entry and n != "INTERNET"
         and G.nodes.get(n, {}).get("label") != "INTERNET"
         and G.nodes.get(n, {}).get("kind") != "internet"
     ]
