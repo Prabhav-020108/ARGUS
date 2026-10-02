@@ -10,7 +10,32 @@ import json
 import math
 import os
 import pathlib
+import re
 import networkx as nx
+
+
+def _mask_text(text: str) -> str:
+    """Mask account IDs, ARNs, and key IDs."""
+    if not text:
+        return text
+    s = str(text)
+    # Mask AWS access key IDs (AKIA..., ASIA...)
+    s = re.sub(r"\b(AKIA|ASIA)[0-9A-Z]{12}([0-9A-Z]{4})\b", r"****\2", s)
+    # Mask full ARNs: replace account ID segment with ***
+    s = re.sub(r"arn:aws:([a-z0-9-]+):([a-z0-9-]*):\d{12}:([^\s\"']+)", r"arn:aws:\1:\2:***:\3", s)
+    # Mask any standalone 12-digit account IDs
+    s = re.sub(r"\b\d{12}\b", r"************", s)
+    return s
+
+
+def _mask_node(G, n) -> str:
+    """Return masked label for a node, masking key IDs as ****last4."""
+    data = G.nodes.get(n, {})
+    kind = data.get("kind", "")
+    lbl = data.get("label", str(n))
+    if kind == "key":
+        return f"****{lbl[-4:]}"
+    return _mask_text(lbl)
 
 
 def main() -> int:
@@ -32,7 +57,7 @@ def main() -> int:
 
     # 2. Lazy imports and graph construction
     try:
-        from risk.attack_graph import build_attack_graph, resolve_entry_nodes, ADMIN
+        from risk.attack_graph import build_attack_graph, resolve_entry_nodes, get_crown_jewels, ADMIN
     except ImportError:
         print("validate.py: waiting for P1's attack_graph.py to be merged")
         return 2
@@ -54,12 +79,21 @@ def main() -> int:
     for etype, count in sorted(etype_counts.items()):
         print(f"  {etype}: {count}")
 
-    # 4. Entry node resolution and PageRank calculation
+    # 4. Entry node and crown jewel resolution
     entry = resolve_entry_nodes(G)
     print("\nEntry nodes:")
     for e in entry:
-        lbl = G.nodes.get(e, {}).get("label", str(e))
-        print(f"  {e} (label: {lbl})")
+        data = G.nodes.get(e, {})
+        kind = data.get("kind", "")
+        print(f"  {_mask_node(G, e)} (kind: {kind})")
+
+    crown_jewels = get_crown_jewels(G)
+    print("\nCrown jewels:")
+    for cj in crown_jewels:
+        data = G.nodes.get(cj, {})
+        kind = data.get("kind", "")
+        print(f"  {_mask_node(G, cj)} (kind: {kind})")
+
     pi = score_digraph(G, entry)
 
     # 5. Top 15 ranked nodes
@@ -68,8 +102,8 @@ def main() -> int:
     for node_id, score in sorted_nodes[:15]:
         node_data = G.nodes.get(node_id, {})
         kind = node_data.get("kind", "unknown")
-        label = node_data.get("label", str(node_id))
-        print(f"  {score:.5f} | {kind} | {label}")
+        masked_lbl = _mask_node(G, node_id)
+        print(f"  {score:.5f} | {kind} | {masked_lbl}")
 
     # Load configuration and ground-truth specifications relative to this file
     risk_dir = pathlib.Path(__file__).resolve().parent
@@ -85,6 +119,7 @@ def main() -> int:
 
     # 6. Directed path graph with log transformation: len = -log(p)
     H = nx.DiGraph()
+    H.add_nodes_from(G.nodes(data=True))
     for u, v, d in G.edges(data=True):
         p = d.get("p", 1.0)
         p_val = max(min(float(p), 1.0), 1e-12)
@@ -100,17 +135,17 @@ def main() -> int:
 
     print("\nPaths from entry nodes to ADMIN:")
     for e in entry:
-        if admin_node in H and nx.has_path(H, e, admin_node):
+        if e in H and admin_node in H and nx.has_path(H, e, admin_node):
             if has_mpp:
                 mpp_res = most_probable_path(G, e, admin_node)
                 path = mpp_res[0] if isinstance(mpp_res, tuple) else mpp_res
             else:
                 path = nx.shortest_path(H, source=e, target=admin_node, weight="len")
-            path_labels = [G.nodes.get(n, {}).get("label", str(n)) for n in path]
+            path_labels = [_mask_node(G, n) for n in path]
             p_prod = 1.0
             for u, v in zip(path[:-1], path[1:]):
                 p_prod *= H[u][v].get("p", 1.0)
-            print(f"  Entry {e}: {' -> '.join(path_labels)} (p_prod={p_prod:.5f})")
+            print(f"  Entry {_mask_node(G, e)}: {' -> '.join(path_labels)} (p_prod={p_prod:.5f})")
 
     # 7. Acceptance checks
     check_a_pass = False
@@ -146,29 +181,37 @@ def main() -> int:
     else:
         print("\nCheck (a) FAIL: ADMIN_EQUIV node not found in scored nodes")
 
-    # (b) Path matches ground truth
+    # (b) Path matches ground truth (ignoring nodes of kind 'key')
     gt_entries = gt_data.get("entry", [])
     expected_path_labels = gt_data.get("expected_path_labels", [])
     gt_entry_label = gt_entries[0] if gt_entries else None
 
-    gt_node = None
-    for n, data in G.nodes(data=True):
-        if data.get("label") == gt_entry_label or n == gt_entry_label:
-            gt_node = n
-            break
+    found_path = None
+    # Check paths originating from resolved entry nodes
+    for e in entry:
+        if admin_node in H and nx.has_path(H, e, admin_node):
+            p = nx.shortest_path(H, source=e, target=admin_node, weight="len")
+            # Strip key nodes per requirement (iii)
+            p_trimmed = [n for n in p if G.nodes.get(n, {}).get("kind") != "key"]
+            if p_trimmed and (G.nodes.get(p_trimmed[0], {}).get("label") == gt_entry_label or p_trimmed[0] == gt_entry_label):
+                found_path = p_trimmed
+                break
 
-    if gt_node is None:
-        print(f"Check (b) FAIL: Ground-truth entry '{gt_entry_label}' not found in attack graph")
-    elif admin_node not in H or not nx.has_path(H, gt_node, admin_node):
-        print(f"Check (b) FAIL: No path from ground-truth entry '{gt_entry_label}' to {admin_node}")
+    # Fallback: check path from the gt_entry_label node itself in G
+    if found_path is None:
+        gt_node = None
+        for n, data in G.nodes(data=True):
+            if data.get("label") == gt_entry_label or n == gt_entry_label:
+                gt_node = n
+                break
+        if gt_node is not None and admin_node in H and nx.has_path(H, gt_node, admin_node):
+            p = nx.shortest_path(H, source=gt_node, target=admin_node, weight="len")
+            found_path = [n for n in p if G.nodes.get(n, {}).get("kind") != "key"]
+
+    if found_path is None:
+        print(f"Check (b) FAIL: No valid path found from ground-truth entry '{gt_entry_label}' to {admin_node}")
     else:
-        best_path = nx.shortest_path(H, source=gt_node, target=admin_node, weight="len")
-        start_idx = 0
-        while start_idx < len(best_path) and G.nodes.get(best_path[start_idx], {}).get("kind") == "key":
-            start_idx += 1
-        trimmed_path = best_path[start_idx:]
-        actual_labels = [G.nodes.get(n, {}).get("label", str(n)) for n in trimmed_path]
-
+        actual_labels = [G.nodes.get(n, {}).get("label", str(n)) for n in found_path]
         has_wildcard = any(lbl.startswith("<") for lbl in expected_path_labels)
         if has_wildcard:
             print("NOTE: statement label is still a placeholder wildcard in expected path")
@@ -178,11 +221,12 @@ def main() -> int:
             exp.startswith("<") or act == exp
             for act, exp in zip(actual_labels, expected_path_labels)
         )
+        masked_actual = [_mask_node(G, n) for n in found_path]
         if labels_match:
             check_b_pass = True
-            print(f"Check (b) PASS: Path labels match ground truth: {' -> '.join(actual_labels)}")
+            print(f"Check (b) PASS: Path labels match ground truth: {' -> '.join(masked_actual)}")
         else:
-            print(f"Check (b) FAIL: Path {actual_labels} does not match expected {expected_path_labels}")
+            print(f"Check (b) FAIL: Path {masked_actual} does not match expected {expected_path_labels}")
 
     # (c) Scanner control check
     excluded_principals = config_data.get("excluded_principals", [])
@@ -196,7 +240,7 @@ def main() -> int:
 
     if scanner_node is None:
         check_c_pass = True
-        print(f"Check (c) PASS: Scanner principal '{scanner_name}' is absent from the attack graph")
+        print(f"Check (c) PASS: Scanner principal '{_mask_text(scanner_name)}' is absent from the attack graph")
     else:
         path_from_scanner = admin_node in H and nx.has_path(H, scanner_node, admin_node)
         key_preds = [
@@ -207,9 +251,9 @@ def main() -> int:
 
         if not path_from_scanner and not path_from_key:
             check_c_pass = True
-            print(f"Check (c) PASS: No path from scanner principal '{scanner_name}' (nor active keys) to {admin_node}")
+            print(f"Check (c) PASS: Scanner principal '{_mask_text(scanner_name)}' has NO path to {admin_node}")
         else:
-            print(f"Check (c) FAIL: Found path from scanner principal '{scanner_name}' or its key to {admin_node}")
+            print(f"Check (c) FAIL: Found path from scanner principal '{_mask_text(scanner_name)}' or its key to {admin_node}")
 
     # 8. Summary verdict
     res_a = "PASS" if check_a_pass else "FAIL"
