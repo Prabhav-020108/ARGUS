@@ -1,0 +1,8 @@
+# Phase 2 PPR & Simulation Decisions Note
+
+- **Absorbing Node (`__ABSORB__`)**: Standard row-stochastic normalisation scales any non-empty row to 1.0, which would erroneously promote a weak lone edge ($p=0.1$) to certainty ($1.0$). Directing residual transition probability ($1 - \sum p$) to a synthetic non-restarting absorb sink preserves actual probability magnitudes.
+- **Dangling Node Re-injection at Entry**: Sinks/dangling nodes have nowhere to transition; returning their probability mass strictly into the restart distribution $\mathbf{e}$ (the entry set) models the attacker restarting reconnaissance from external vantage points rather than magically materialising at internal assets.
+- **Semantics of $\alpha$**: Damping factor $\alpha$ represents the probability that an attacker actively traverses an available attack path hop; $1 - \alpha$ is the probability of teleporting back to entry nodes.
+- **Selective `apply_delta` Effects**: Only `remove_policy_statement` (strips privilege escalation edges) and `restrict_cidr` (attenuates ingress rule $p$ by factor) alter the graph structure; all other ops represent out-of-scope policies or non-structural controls and produce no graph changes.
+- **Lazy Imports**: `risk.attack_graph` (owned by Phase 1 Cartography integration) is imported lazily inside `score_digraph` / `score_graph` so the PPR engine remains completely decoupled and testable as an isolated mathematical unit.
+- **Strict Numerical Tolerances**: Exact analytical closed forms are validated to $10^{-9}$ numerical precision; parity against `networkx.pagerank` on absorbing graphs is pinned to $10^{-6}$ to enforce deterministic convergence.
