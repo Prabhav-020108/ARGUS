@@ -135,11 +135,8 @@ def main() -> int:
 
     admin_node = ADMIN if ADMIN in G else "ADMIN_EQUIV"
 
-    try:
-        from risk.paths import most_probable_path
-        has_mpp = True
-    except (ImportError, AttributeError):
-        has_mpp = False
+    from risk.paths import most_probable_path
+    has_mpp = True
 
     print("\nPaths from entry nodes to ADMIN:")
     for e in entry:
