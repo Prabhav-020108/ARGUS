@@ -2,7 +2,7 @@
 Validation runner for ARGUS Phase 2 Risk Engine.
 
 Verifies attack graph properties, Personalized PageRank scoring,
-and path discovery against ground truth definitions without manual intervention.
+and path discovery against ground truth definitions without manual intervention
 """
 
 from collections import Counter
@@ -22,7 +22,8 @@ def _mask_text(text: str) -> str:
     # Mask AWS access key IDs (AKIA..., ASIA...)
     s = re.sub(r"\b(AKIA|ASIA)[0-9A-Z]{12}([0-9A-Z]{4})\b", r"****\2", s)
     # Mask full ARNs: replace account ID segment with ***
-    s = re.sub(r"arn:aws:([a-z0-9-]+):([a-z0-9-]*):\d{12}:([^\s\"']+)", r"arn:aws:\1:\2:***:\3", s)
+    arn_pattern = r"arn:aws:([a-z0-9-]+):([a-z0-9-]*):\d{12}:([^\s\"']+)"
+    s = re.sub(arn_pattern, r"arn:aws:\1:\2:***:\3", s)
     # Mask any standalone 12-digit account IDs
     s = re.sub(r"\b\d{12}\b", r"************", s)
     return s
@@ -57,7 +58,12 @@ def main() -> int:
 
     # 2. Lazy imports and graph construction
     try:
-        from risk.attack_graph import build_attack_graph, resolve_entry_nodes, get_crown_jewels, ADMIN
+        from risk.attack_graph import (
+            build_attack_graph,
+            resolve_entry_nodes,
+            get_crown_jewels,
+            ADMIN,
+        )
     except ImportError:
         print("validate.py: waiting for P1's attack_graph.py to be merged")
         return 2
@@ -74,7 +80,9 @@ def main() -> int:
     # 3. Graph topology diagnostics
     print(f"Node count: {G.number_of_nodes()}")
     print(f"Edge count: {G.number_of_edges()}")
-    etype_counts = Counter(d.get("etype", "UNKNOWN") for _, _, d in G.edges(data=True))
+    etype_counts = Counter(
+        d.get("etype", "UNKNOWN") for _, _, d in G.edges(data=True)
+    )
     print("Edge count per etype:")
     for etype, count in sorted(etype_counts.items()):
         print(f"  {etype}: {count}")
@@ -140,12 +148,16 @@ def main() -> int:
                 mpp_res = most_probable_path(G, e, admin_node)
                 path = mpp_res[0] if isinstance(mpp_res, tuple) else mpp_res
             else:
-                path = nx.shortest_path(H, source=e, target=admin_node, weight="len")
+                path = nx.shortest_path(
+                    H, source=e, target=admin_node, weight="len"
+                )
             path_labels = [_mask_node(G, n) for n in path]
             p_prod = 1.0
             for u, v in zip(path[:-1], path[1:]):
                 p_prod *= H[u][v].get("p", 1.0)
-            print(f"  Entry {_mask_node(G, e)}: {' -> '.join(path_labels)} (p_prod={p_prod:.5f})")
+            e_lbl = _mask_node(G, e)
+            p_str = " -> ".join(path_labels)
+            print(f"  Entry {e_lbl}: {p_str} (p_prod={p_prod:.5f})")
 
     # 7. Acceptance checks
     check_a_pass = False
@@ -167,9 +179,12 @@ def main() -> int:
 
     filtered_ranked = [
         (n, s) for n, s in sorted_nodes
-        if n not in all_entry and n != "INTERNET"
-        and G.nodes.get(n, {}).get("label") != "INTERNET"
-        and G.nodes.get(n, {}).get("kind") != "internet"
+        if (
+            n not in all_entry
+            and n != "INTERNET"
+            and G.nodes.get(n, {}).get("label") != "INTERNET"
+            and G.nodes.get(n, {}).get("kind") != "internet"
+        )
     ]
     rank_excl = None
     for idx, (n, _) in enumerate(filtered_ranked, start=1):
@@ -178,12 +193,21 @@ def main() -> int:
             break
 
     if rank_all is not None and rank_excl is not None:
-        print(f"\nADMIN_EQUIV rank: all={rank_all}, excluding entry/INTERNET={rank_excl}")
+        print(
+            f"\nADMIN_EQUIV rank: all={rank_all}, "
+            f"excluding entry/INTERNET={rank_excl}"
+        )
         if rank_excl <= 3:
             check_a_pass = True
-            print(f"Check (a) PASS: ADMIN_EQUIV rank excluding entry/INTERNET is {rank_excl} (<= 3)")
+            print(
+                f"Check (a) PASS: ADMIN_EQUIV rank excluding "
+                f"entry/INTERNET is {rank_excl} (<= 3)"
+            )
         else:
-            print(f"Check (a) FAIL: ADMIN_EQUIV rank excluding entry/INTERNET is {rank_excl} (> 3)")
+            print(
+                f"Check (a) FAIL: ADMIN_EQUIV rank excluding "
+                f"entry/INTERNET is {rank_excl} (> 3)"
+            )
     else:
         print("\nCheck (a) FAIL: ADMIN_EQUIV node not found in scored nodes")
 
@@ -198,8 +222,13 @@ def main() -> int:
         if admin_node in H and nx.has_path(H, e, admin_node):
             p = nx.shortest_path(H, source=e, target=admin_node, weight="len")
             # Strip key nodes per requirement (iii)
-            p_trimmed = [n for n in p if G.nodes.get(n, {}).get("kind") != "key"]
-            if p_trimmed and (G.nodes.get(p_trimmed[0], {}).get("label") == gt_entry_label or p_trimmed[0] == gt_entry_label):
+            p_trimmed = [
+                n for n in p if G.nodes.get(n, {}).get("kind") != "key"
+            ]
+            if p_trimmed and (
+                G.nodes.get(p_trimmed[0], {}).get("label") == gt_entry_label
+                or p_trimmed[0] == gt_entry_label
+            ):
                 found_path = p_trimmed
                 break
 
@@ -210,17 +239,33 @@ def main() -> int:
             if data.get("label") == gt_entry_label or n == gt_entry_label:
                 gt_node = n
                 break
-        if gt_node is not None and admin_node in H and nx.has_path(H, gt_node, admin_node):
-            p = nx.shortest_path(H, source=gt_node, target=admin_node, weight="len")
-            found_path = [n for n in p if G.nodes.get(n, {}).get("kind") != "key"]
+        if (
+            gt_node is not None
+            and admin_node in H
+            and nx.has_path(H, gt_node, admin_node)
+        ):
+            p = nx.shortest_path(
+                H, source=gt_node, target=admin_node, weight="len"
+            )
+            found_path = [
+                n for n in p if G.nodes.get(n, {}).get("kind") != "key"
+            ]
 
     if found_path is None:
-        print(f"Check (b) FAIL: No valid path found from ground-truth entry '{gt_entry_label}' to {admin_node}")
+        print(
+            f"Check (b) FAIL: No valid path found from ground-truth entry "
+            f"'{gt_entry_label}' to {admin_node}"
+        )
     else:
-        actual_labels = [G.nodes.get(n, {}).get("label", str(n)) for n in found_path]
+        actual_labels = [
+            G.nodes.get(n, {}).get("label", str(n)) for n in found_path
+        ]
         has_wildcard = any(lbl.startswith("<") for lbl in expected_path_labels)
         if has_wildcard:
-            print("NOTE: statement label is still a placeholder wildcard in expected path")
+            print(
+                "NOTE: statement label is still a placeholder wildcard "
+                "in expected path"
+            )
 
         lengths_match = len(actual_labels) == len(expected_path_labels)
         labels_match = lengths_match and all(
@@ -230,13 +275,21 @@ def main() -> int:
         masked_actual = [_mask_node(G, n) for n in found_path]
         if labels_match:
             check_b_pass = True
-            print(f"Check (b) PASS: Path labels match ground truth: {' -> '.join(masked_actual)}")
+            p_str = " -> ".join(masked_actual)
+            print(f"Check (b) PASS: Path labels match ground truth: {p_str}")
         else:
-            print(f"Check (b) FAIL: Path {masked_actual} does not match expected {expected_path_labels}")
+            print(
+                f"Check (b) FAIL: Path {masked_actual} does not match "
+                f"expected {expected_path_labels}"
+            )
 
     # (c) Scanner control check
     excluded_principals = config_data.get("excluded_principals", [])
-    scanner_name = excluded_principals[0] if excluded_principals else "argus-cartography-scanner"
+    scanner_name = (
+        excluded_principals[0]
+        if excluded_principals
+        else "argus-cartography-scanner"
+    )
 
     scanner_node = None
     for n, data in G.nodes(data=True):
@@ -246,26 +299,47 @@ def main() -> int:
 
     if scanner_node is None:
         check_c_pass = True
-        print(f"Check (c) PASS: Scanner principal '{_mask_text(scanner_name)}' is absent from the attack graph")
+        s_lbl = _mask_text(scanner_name)
+        print(
+            f"Check (c) PASS: Scanner principal '{s_lbl}' is absent "
+            f"from the attack graph"
+        )
     else:
-        path_from_scanner = admin_node in H and nx.has_path(H, scanner_node, admin_node)
+        path_from_scanner = (
+            admin_node in H
+            and scanner_node in H
+            and nx.has_path(H, scanner_node, admin_node)
+        )
         key_preds = [
             u for u, v, _ in G.in_edges(scanner_node, data=True)
             if G.nodes.get(u, {}).get("kind") == "key"
         ]
-        path_from_key = any(admin_node in H and nx.has_path(H, k, admin_node) for k in key_preds)
+        path_from_key = any(
+            admin_node in H and k in H and nx.has_path(H, k, admin_node)
+            for k in key_preds
+        )
 
+        s_lbl = _mask_text(scanner_name)
         if not path_from_scanner and not path_from_key:
             check_c_pass = True
-            print(f"Check (c) PASS: Scanner principal '{_mask_text(scanner_name)}' has NO path to {admin_node}")
+            print(
+                f"Check (c) PASS: Scanner principal '{s_lbl}' has NO path "
+                f"to {admin_node}"
+            )
         else:
-            print(f"Check (c) FAIL: Found path from scanner principal '{_mask_text(scanner_name)}' or its key to {admin_node}")
+            print(
+                f"Check (c) FAIL: Found path from scanner principal '{s_lbl}' "
+                f"or its key to {admin_node}"
+            )
 
     # 8. Summary verdict
     res_a = "PASS" if check_a_pass else "FAIL"
     res_b = "PASS" if check_b_pass else "FAIL"
     res_c = "PASS" if check_c_pass else "FAIL"
-    print(f"\nFinal Summary: Check (a) [{res_a}], Check (b) [{res_b}], Check (c) [{res_c}]")
+    print(
+        f"\nFinal Summary: Check (a) [{res_a}], Check (b) [{res_b}], "
+        f"Check (c) [{res_c}]"
+    )
 
     return 0 if (check_a_pass and check_b_pass and check_c_pass) else 1
 
