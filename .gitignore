@@ -45,4 +45,10 @@ aws/
 
 # Secrets / key files
 *.csv
-*accessKeys*
+*accessKeys*
+
+# Testbeds ground truth
+!testbeds/cloudgoat/
+!testbeds/cloudgoat/ground_truth_paths.json
+!testbeds/**/*.json
+

@@ -1,0 +1,19 @@
+{
+  "actions": {
+    "iam:CreatePolicyVersion": 0.85,
+    "iam:SetDefaultPolicyVersion": 0.85,
+    "iam:AttachUserPolicy": 0.9,
+    "iam:AttachRolePolicy": 0.9,
+    "iam:AttachGroupPolicy": 0.9,
+    "iam:PutUserPolicy": 0.9,
+    "iam:PutRolePolicy": 0.9,
+    "iam:PutGroupPolicy": 0.9,
+    "iam:CreateAccessKey": 0.7,
+    "iam:CreateLoginProfile": 0.7,
+    "iam:UpdateLoginProfile": 0.7,
+    "iam:UpdateAssumeRolePolicy": 0.8,
+    "iam:AddUserToGroup": 0.8,
+    "iam:PassRole": 0.4
+  },
+  "notes": "Subset of well-known IAM privilege-escalation primitives (see Rhino Security Labs). PassRole is only dangerous combined with a compute-creation action, so it gets a low p. Extend deliberately; log additions."
+}

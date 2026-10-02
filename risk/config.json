@@ -1,0 +1,7 @@
+{
+  "entry_nodes": ["INTERNET", "raynor-cgidjq6epnjtgc", "argus-test-user"],
+  "excluded_principals": ["argus-cartography-scanner"],
+  "crown_jewel_ids": ["argus-test-pii-near-pb3882", "argus-test-pii-far-pb3882"],
+  "crown_jewel_tag": "contains_personal_data",
+  "notes": "Entry nodes are explicit by design (Loophole L5). Users listed here are seeded via their active keys if present, else directly. crown_jewel_ids is the manual fallback if S3 tags are not ingested (L6). ADMIN_EQUIV is always a crown jewel."
+}
