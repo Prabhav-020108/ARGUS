@@ -1,0 +1,16 @@
+{
+  "internet_to_range": 1.0,
+  "range_to_rule": 1.0,
+  "net_all_ports": 0.95,
+  "net_sensitive_port": 0.9,
+  "net_web_port": 0.4,
+  "sensitive_ports": [22, 3389, 3306, 5432, 1433, 27017, 6379],
+  "sg_to_vpc": 0.2,
+  "uses_key_active": 0.9,
+  "can_assume": 0.6,
+  "has_policy": 1.0,
+  "has_statement": 1.0,
+  "direct_admin": 1.0,
+  "s3_read": 0.8,
+  "s3_write": 0.7
+}

@@ -5,7 +5,6 @@ All analytical closed forms were derived before writing this file and are
 independent of the implementation.  Do NOT weaken tolerances; fix the code.
 """
 
-import numpy as np
 import networkx as nx
 import pytest
 

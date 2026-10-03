@@ -1,0 +1,15 @@
+{
+  "scenario": "iam_privesc_by_rollback",
+  "scenario_name_verified": false,
+  "cloudgoat_suffix": "cgidjq6epnjtgc",
+  "entry": ["raynor-cgidjq6epnjtgc"],
+  "crown_jewel": "ADMIN_EQUIV",
+  "attack_chain_description": "Raynor holds iam:SetDefaultPolicyVersion on his own policy; an older policy version grants admin; setting it as default gives admin.",
+  "expected_path_labels": [
+    "raynor-cgidjq6epnjtgc",
+    "cg-raynor-policy-cgidjq6epnjtgc",
+    "<statement containing iam:SetDefaultPolicyVersion>",
+    "ADMIN_EQUIV"
+  ],
+  "notes": "Non-default policy versions are not ingested by Cartography, so the admin capability is inferred from the action, not visible as an admin statement. Verified in Neo4j: Raynor's statement is Allow, action [iam:Get*, iam:List*, iam:SetDefaultPolicyVersion], resource [*]."
+}
