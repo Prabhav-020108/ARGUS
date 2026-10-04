@@ -1,0 +1,6 @@
+# The vault holds (encrypted) real identifiers and its key. Never commit either.
+vault.db
+vault.db-journal
+*.db
+.vault.key
+*.key

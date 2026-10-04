@@ -17,5 +17,5 @@ checklist for Phase 4 — one deny rule per row.
 | 10 | Rule 15 — cross-border transfer | Flag (do not hard-fail) any resource holding personal data outside an approved region | AWSUser / AWSRole `.region` property | Rule 15 is permissive/negative-list — this is a dashboard **visibility** flag per the v3 design doc §3, not a violation |
 
 ## Review status
-- [ ] Field names cross-checked against `graph/schema.md`
+- [x] Field names cross-checked against `graph/schema.md`
 - [ ] Mentor / legal-adjacent review pass completed

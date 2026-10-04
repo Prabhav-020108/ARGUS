@@ -1,0 +1,3 @@
+# Phase 4 additions (kept out of requirements.txt on purpose, to avoid merge conflicts with Phase 3).
+# Everything else Phase 4 needs (cryptography, jsonschema, boto3, pytest) is already in requirements.txt.
+presidio-analyzer>=2.2.355,<3
